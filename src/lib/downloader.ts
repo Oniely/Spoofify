@@ -1,10 +1,10 @@
-"use server";
+'use server';
 
-import filenamify from "filenamify";
-import { serverTimestamp } from "./utils";
-const ytSearch = require("youtube-sr").default;
-const ytdl = require("ytdl-core");
-const { PassThrough } = require("stream");
+import filenamify from 'filenamify';
+import { serverTimestamp } from './utils';
+const ytSearch = require('youtube-sr').default;
+const ytdl = require('ytdl-core');
+const { PassThrough } = require('stream');
 
 // MAIN FUNCTIONS
 export const downloadTrack = async (track: any, silent = true) => {
@@ -22,13 +22,13 @@ export const downloadTrack = async (track: any, silent = true) => {
 
     // Create filename
     const filename =
-      pathNamify(`${track.name} by ${track.artists[0].name}`) + ".m4a";
+      pathNamify(`${track.name} by ${track.artists[0].name}`) + '.m4a';
 
     return { buffer, filename };
   } catch (error) {
     console.error(error);
   }
-}
+};
 
 // SUB FUNCTIONS
 const findYtId = async (track: any) => {
@@ -36,7 +36,7 @@ const findYtId = async (track: any) => {
     const query = `${track.name} by ${track.artists[0].name} official`;
 
     // Get search data
-    const videos = await ytSearch.search(query, { limit: 5, type: "video" });
+    const videos = await ytSearch.search(query, { limit: 5, type: 'video' });
 
     // Find closest to the track's duration
     let closestDuration = null;
@@ -63,7 +63,7 @@ const findYtId = async (track: any) => {
   } catch (error) {
     console.error(error);
   }
-}
+};
 
 const downloadYT = async (id: string) => {
   try {
@@ -72,7 +72,7 @@ const downloadYT = async (id: string) => {
 
     // Choose the highest quality audio format
     const audioFormat = ytdl.chooseFormat(info.formats, {
-      quality: "highestaudio",
+      quality: 'highestaudio',
     });
 
     // Get audio stream and process it
@@ -83,37 +83,37 @@ const downloadYT = async (id: string) => {
   } catch (error) {
     console.error(error);
   }
-}
+};
 
 const streamToBuffer = async (stream: any) => {
   try {
     return new Promise((resolve, reject) => {
       const mp3Buffer: any = [];
       const outputStream = new PassThrough();
-      outputStream.on("error", (err: any) => {
+      outputStream.on('error', (err: any) => {
         reject(err);
       });
-      outputStream.on("end", () => {
+      outputStream.on('end', () => {
         const finalBuffer = Buffer.concat(mp3Buffer);
         resolve(finalBuffer);
       });
 
       stream.pipe(outputStream);
-      outputStream.on("data", (chunk: any) => {
+      outputStream.on('data', (chunk: any) => {
         mp3Buffer.push(chunk);
       });
 
-      outputStream.on("error", (err: any) => {
+      outputStream.on('error', (err: any) => {
         reject(err);
       });
     });
   } catch (error) {
     console.error(error);
   }
-}
+};
 
 // UTIL FUNCTIONS
 const pathNamify = (path: string) => {
   // @ts-ignore
-  return filenamify(path).replace(/[^\p{L}\p{N}\p{P}\p{Z}^$\n]/gu, "");
-}
+  return filenamify(path).replace(/[^\p{L}\p{N}\p{P}\p{Z}^$\n]/gu, '');
+};
