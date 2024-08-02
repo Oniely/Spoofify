@@ -148,13 +148,14 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const downloadTrack = async (track: any, ffmpeg = null) => {
+    // review each function especially the ytsearching and downloading
     try {
       // Download track
       const response = await axios.post("/api/download/track", track, {
         responseType: "blob",
       });
       let buffer = response.data;
-
+      console.log("DOWNLOAD DATA RECEIVED")
       let filename = getFilenameFromHeaders(response.headers);
 
       // If mode == slow it should conver to mp3 and add metadata
@@ -244,6 +245,8 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const addDownload = (spotifyItem: any, speed: any) => {
+    console.log("ADDED TO DOWNLOAD");
+
     setQueue((prev: any) => [...prev, { ...spotifyItem, speed }]);
   };
 

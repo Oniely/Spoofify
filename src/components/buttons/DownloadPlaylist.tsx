@@ -18,10 +18,8 @@ const DownloadPlaylist = ({ playlist }: { playlist: any }) => {
     }
   };
 
-  const playlistState: any = () => itemState(playlist);
-
   // Check if downloaded
-  if (playlistState === "downloaded") {
+  if (itemState(playlist) === "downloaded") {
     return (
       <div className="flex items-center justify-center gap-3 bg-accent/50 px-5 py-2 rounded w-[150px]">
         <Check />
@@ -30,7 +28,7 @@ const DownloadPlaylist = ({ playlist }: { playlist: any }) => {
     );
 
     // Check if queued
-  } else if (playlistState === "queued") {
+  } else if (itemState(playlist) === "queued") {
     return (
       <div className="flex items-center gap-3 bg-accent/10 px-5 py-2 rounded">
         <Spinner />
@@ -39,7 +37,7 @@ const DownloadPlaylist = ({ playlist }: { playlist: any }) => {
     );
 
     // Check if downloading
-  } else if (playlistState === "downloading")
+  } else if (itemState(playlist) === "downloading")
     return (
       <div className="bg-accent/50 px-5 py-2 rounded w-[150px] relative text-center overflow-hidden">
         <motion.div

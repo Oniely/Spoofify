@@ -12,10 +12,8 @@ const DownloadTrack = ({ track }: { track: any }) => {
     addDownload(track, "slow");
   };
 
-  const trackState: any = () => itemState(track);
-
   // Check if downloaded
-  if (trackState === "downloaded") {
+  if (itemState(track) === "downloaded") {
     return (
       <div className="bg-accent/50 rounded p-1.5 md:p-2.5 text-lg">
         <Check />
@@ -23,14 +21,14 @@ const DownloadTrack = ({ track }: { track: any }) => {
     );
   }
   // Check if queued
-  else if (trackState === "queued")
+  else if (itemState(track) === "queued")
     return (
       <div className="bg-accent/10 rounded p-1.5 md:p-2.5 text-lg">
         <Spinner />
       </div>
     );
   // Check if downloading
-  else if (trackState === "downloading") {
+  else if (itemState(track) === "downloading") {
     return (
       <div className="bg-accent/80 rounded p-1.5 md:p-2.5 text-lg">
         <Spinner />

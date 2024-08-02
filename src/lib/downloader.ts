@@ -36,7 +36,7 @@ const findYtId = async (track: any) => {
     const query = `${track.name} by ${track.artists[0].name} official`;
 
     // Get search data
-    const videos = await ytSearch.search(query, { limit: 5, type: 'video' });
+    const videos = await ytSearch.search(query, { limit: 2, type: 'video' });
 
     // Find closest to the track's duration
     let closestDuration = null;
