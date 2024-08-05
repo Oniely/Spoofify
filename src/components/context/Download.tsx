@@ -150,15 +150,17 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
   const downloadTrack = async (track: any, ffmpeg = null) => {
     // review each function especially the ytsearching and downloading
     try {
+      console.log('API downloadTrack')
       // Download track
       const response = await axios.post("/api/download/track", track, {
         responseType: "blob",
       });
       let buffer = response.data;
-      console.log("DOWNLOAD DATA RECEIVED")
+      console.log("received buffer");
       let filename = getFilenameFromHeaders(response.headers);
-
+      console.log("getFilenameFromHeaders: ", filename);
       // If mode == slow it should conver to mp3 and add metadata
+      console.log("Track Speed: ", track.speed)
       if (track.speed === "slow") {
         // Convert to mp3
         buffer = await convert(response.data, ffmpeg);

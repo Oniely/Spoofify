@@ -2,13 +2,13 @@
 
 import filenamify from 'filenamify';
 import { serverTimestamp } from './utils';
+import ytdl from 'ytdl-core';
 const ytSearch = require('youtube-sr').default;
-const ytdl = require('ytdl-core');
-const { PassThrough } = require('stream');
 
 // MAIN FUNCTIONS
 export const downloadTrack = async (track: any, silent = true) => {
   try {
+    console.log('trying downloadTrack()');
     if (!silent && track) {
       console.log(
         `[${serverTimestamp()}]: Downloading ${track.name} by ${
@@ -18,11 +18,15 @@ export const downloadTrack = async (track: any, silent = true) => {
     }
     // Find and download YouTube video
     const id = await findYtId(track);
+    console.log(`YoutubeID: https://youtube.com/watch?v=${id}`);
     let buffer = await downloadYT(id);
+    console.log('BUFFER: ', buffer);
 
     // Create filename
     const filename =
       pathNamify(`${track.name} by ${track.artists[0].name}`) + '.m4a';
+
+    console.log('downloadTrack() filename: ', filename);
 
     return { buffer, filename };
   } catch (error) {
@@ -33,10 +37,11 @@ export const downloadTrack = async (track: any, silent = true) => {
 // SUB FUNCTIONS
 const findYtId = async (track: any) => {
   try {
+    console.log('trying fintYtId()');
     const query = `${track.name} by ${track.artists[0].name} official`;
 
     // Get search data
-    const videos = await ytSearch.search(query, { limit: 2, type: 'video' });
+    const videos = await ytSearch.search(query, { limit: 3, type: 'video' });
 
     // Find closest to the track's duration
     let closestDuration = null;
@@ -67,50 +72,45 @@ const findYtId = async (track: any) => {
 
 const downloadYT = async (id: string) => {
   try {
+    console.log('trying downloadYT()');
     // Get info
     const info = await ytdl.getInfo(`https://www.youtube.com/watch?v=${id}`);
-
+    console.log('INFO');
     // Choose the highest quality audio format
     const audioFormat = ytdl.chooseFormat(info.formats, {
       quality: 'highestaudio',
     });
+    console.log('audioFormat');
 
     // Get audio stream and process it
     const audioStream = ytdl.downloadFromInfo(info, { format: audioFormat });
-    const buffer = streamToBuffer(audioStream);
+    console.log('audioStream: ', audioStream);
 
-    return buffer;
+    
   } catch (error) {
     console.error(error);
   }
 };
 
-const streamToBuffer = async (stream: any) => {
-  try {
-    return new Promise((resolve, reject) => {
-      const mp3Buffer: any = [];
-      const outputStream = new PassThrough();
-      outputStream.on('error', (err: any) => {
-        reject(err);
-      });
-      outputStream.on('end', () => {
-        const finalBuffer = Buffer.concat(mp3Buffer);
-        resolve(finalBuffer);
-      });
-
-      stream.pipe(outputStream);
-      outputStream.on('data', (chunk: any) => {
-        mp3Buffer.push(chunk);
-      });
-
-      outputStream.on('error', (err: any) => {
-        reject(err);
-      });
+async function streamToBuffer(readableStream: any) {
+  const chunks: any = [];
+  return new Promise((resolve, reject) => {
+    readableStream.on('data', (chunk: any) => {
+      console.log('Received chunk:', chunk);
+      chunks.push(chunk);
     });
-  } catch (error) {
-    console.error(error);
-  }
-};
+
+    readableStream.on('end', () => {
+      console.log('Stream ended');
+      resolve(Buffer.concat(chunks));
+    });
+    
+    readableStream.on('error', (error: any) => {
+      console.error('Stream error:', error);
+      reject(error);
+    });
+  });
+}
 
 // UTIL FUNCTIONS
 const pathNamify = (path: string) => {
