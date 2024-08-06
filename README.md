@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## Spoofify
 
-## Getting Started
+**Spoofify** is a Spotify downloader application that allows users to download tracks or playlists from Spotify using a provided Spotify link. By simply inputting the Spotify link, Spoofify will locate and enable the download of the specified tracks for offline use.
 
-First, run the development server:
+### Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Download individual tracks or entire playlists from Spotify
+- User-friendly interface for easy link input and download initiation
+- High-quality audio downloads
+- Supports multiple download formats
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Installation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Clone the repository:
+    ```sh
+    git clone https://github.com/yourusername/spoofify.git
+    ```
+2. Navigate to the project directory:
+    ```sh
+    cd spoofify
+    ```
+3. Install the required dependencies:
+    ```sh
+    bun install
+    ```
+4. Get you Spotify API keys from Spotify:
+    ```sh
+    https://developer.spotify.com/dashboard
+    ```
+5. Create a .env file and add your KEYS: 
+    ```sh
+    CLIENT_ID=***
+    CLIENT_SECRET=***
+    ```
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+### Usage
 
-## Learn More
+1. Run the application:
+    ```sh
+    bun run dev
+    ```
+2. Enter the Spotify link for the track or playlist you wish to download.
+3. Follow the on-screen prompts to complete your download.
 
-To learn more about Next.js, take a look at the following resources:
+### Contributing
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Contributions are welcome! Please fork the repository and submit a pull request for any enhancements or bug fixes.
