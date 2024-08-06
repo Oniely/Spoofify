@@ -2,7 +2,8 @@
 
 import filenamify from 'filenamify';
 import { serverTimestamp } from './utils';
-import ytdl from 'ytdl-core';
+import ytdl from '@distube/ytdl-core';
+import { PassThrough } from 'stream';
 const ytSearch = require('youtube-sr').default;
 
 // MAIN FUNCTIONS
@@ -20,8 +21,6 @@ export const downloadTrack = async (track: any, silent = true) => {
     const id = await findYtId(track);
     console.log(`YoutubeID: https://youtube.com/watch?v=${id}`);
     let buffer = await downloadYT(id);
-    console.log('BUFFER: ', buffer);
-
     // Create filename
     const filename =
       pathNamify(`${track.name} by ${track.artists[0].name}`) + '.m4a';
@@ -84,32 +83,39 @@ const downloadYT = async (id: string) => {
 
     // Get audio stream and process it
     const audioStream = ytdl.downloadFromInfo(info, { format: audioFormat });
-    console.log('audioStream: ', audioStream);
+    const buffer = streamToBuffer(audioStream);
 
-    
+    return buffer;
   } catch (error) {
     console.error(error);
   }
 };
 
-async function streamToBuffer(readableStream: any) {
-  const chunks: any = [];
-  return new Promise((resolve, reject) => {
-    readableStream.on('data', (chunk: any) => {
-      console.log('Received chunk:', chunk);
-      chunks.push(chunk);
-    });
+async function streamToBuffer(stream: any) {
+  try {
+    return new Promise((resolve, reject) => {
+      const mp3Buffer: any = [];
+      const outputStream = new PassThrough();
+      outputStream.on("error", (err) => {
+        reject(err);
+      });
+      outputStream.on("end", () => {
+        const finalBuffer = Buffer.concat(mp3Buffer);
+        resolve(finalBuffer);
+      });
 
-    readableStream.on('end', () => {
-      console.log('Stream ended');
-      resolve(Buffer.concat(chunks));
+      stream.pipe(outputStream);
+      outputStream.on("data", (chunk) => {
+        mp3Buffer.push(chunk);
+      });
+
+      outputStream.on("error", (err) => {
+        reject(err);
+      });
     });
-    
-    readableStream.on('error', (error: any) => {
-      console.error('Stream error:', error);
-      reject(error);
-    });
-  });
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 // UTIL FUNCTIONS
