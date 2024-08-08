@@ -26,7 +26,7 @@ const Playlist = async ({ params }: { params: { id: string } }) => {
         {playlist ? (
           <>
             <PlaylistInfo playlist={playlist} />
-            <TrackList tracks={playlist.tracks} />
+            <TrackList tracks={playlist.tracks} type="Playlist" />
           </>
         ) : null}
       </main>

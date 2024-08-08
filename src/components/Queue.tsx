@@ -4,7 +4,6 @@ import { FiChevronDown, FiChevronUp } from "react-icons/fi";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import Github from "./buttons/Github";
 import { useDownloader } from "./context/Download";
 
 const PREVIEW_MAX_IMAGES = 3;
@@ -38,7 +37,7 @@ const Queue = () => {
                       src={
                         item.type === "playlist"
                           ? item.images[0].url
-                          : item.album.images[0].url
+                          : item.album?.images[0].url || ""
                       }
                       className="rounded-full"
                       width={20}
@@ -53,7 +52,7 @@ const Queue = () => {
                   src={
                     currentDownload.type === "playlist"
                       ? currentDownload.images[0].url
-                      : currentDownload.album.images[0].url
+                      : currentDownload.album?.images[0].url || ""
                   }
                   className="rounded-full"
                   width={20}
@@ -90,7 +89,7 @@ const Queue = () => {
                   src={
                     currentDownload.type === "playlist"
                       ? currentDownload.images[0].url
-                      : currentDownload.album.images[0].url
+                      : currentDownload.album?.images[0].url || ""
                   }
                   width={165}
                   height={165}

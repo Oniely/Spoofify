@@ -54,6 +54,24 @@ export async function getTrack(id: string) {
     const track = await getRequest(`https://api.spotify.com/v1/tracks/${id}`);
     return track;
   } catch (error) {
-    console.error('Error fetching track:', error);
+    console.error('Error fetching track: ', error);
+  }
+}
+
+export async function getAlbum(id: string) {
+  try {
+    let album = await getRequest(`https://api.spotify.com/v1/albums/${id}`);
+
+    let { next } = album.tracks;
+    while (next) {
+      const nextTracks = await getRequest(next);
+      album.tracks.items.push(...nextTracks.items);
+
+      next = nextTracks.item;
+    }
+
+    return album;
+  } catch (error) {
+      console.error("Error fetching album: ", error);
   }
 }

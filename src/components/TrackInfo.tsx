@@ -3,7 +3,12 @@ import Link from 'next/link';
 import PlayTrack from './buttons/PlayTrack';
 import DownloadTrack from './buttons/DownloadTrack';
 
-const TrackInfo = ({ track }: { track: any }) => {
+interface Props {
+  track: any;
+  type: "Playlist" | "Track" | "Album"
+}
+
+const TrackInfo = ({ track, type }: Props) => {
   if (!track) return;
 
   const artistLinks = track.artists.map((artist: any) => (
@@ -24,43 +29,79 @@ const TrackInfo = ({ track }: { track: any }) => {
     .padStart(2, '0')}`;
 
   return (
-    <div className="flex justify-between items-center text-text">
-      <div className="w-full flex items-center justify-between text-text">
-        <div className="flex items-center gap-3">
-          <Link href={track.external_urls.spotify}>
-            <Image
-              src={track.album.images[0].url}
-              width={50}
-              height={50}
-              className="rounded w-8 h-8 sm:w-10 sm:h-10"
-              alt="Track Cover"
-            />
-          </Link>
-
-          <div className="flex flex-col max-w-[125px] md:max-w-[300px] overflow-hidden whitespace-nowrap">
-            <Link
-              href={track.external_urls.spotify}
-              className="font-semibold text-sm md:text-md truncate"
-            >
-              {track.name}
+    <>
+      {type === "Playlist" || type === "Track" && (
+        <div className="flex justify-between items-center text-text">
+        <div className="w-full flex items-center justify-between text-text">
+          <div className="flex items-center gap-3">
+            <Link href={track.external_urls.spotify}>
+              <Image
+                src={track.album.images[0].url}
+                width={50}
+                height={50}
+                className="rounded w-8 h-8 sm:w-10 sm:h-10"
+                alt="Track Cover"
+              />
             </Link>
-            <ol className="flex items-center gap-1 text-xs md:text-sm">
-              {
-                // @ts-ignore
-                artistLinks.reduce((prev, curr) => [prev, '·', curr])
-              }
-            </ol>
+  
+            <div className="flex flex-col max-w-[125px] md:max-w-[300px] overflow-hidden whitespace-nowrap">
+              <Link
+                href={track.external_urls.spotify}
+                className="font-semibold text-sm md:text-md truncate"
+              >
+                {track.name}
+              </Link>
+              <ol className="flex items-center gap-1 text-xs md:text-sm">
+                {
+                  // @ts-ignore
+                  artistLinks.reduce((prev, curr) => [prev, '·', curr])
+                }
+              </ol>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs md:text-sm text-white/50 mr-1 md:mr-2">
+              {durationString}
+            </span>
+            <PlayTrack audioUrl={track.preview_url} />
+            <DownloadTrack track={track} />
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs md:text-sm text-white/50 mr-1 md:mr-2">
-            {durationString}
-          </span>
-          <PlayTrack audioUrl={track.preview_url} />
-          <DownloadTrack track={track} />
+      </div>
+      )}
+
+      {type === "Album" && (
+        <div className="flex justify-between items-center text-text">
+        <div className="w-full flex items-center justify-between text-text">
+          <div className="flex items-center gap-3">
+            
+  
+            <div className="flex flex-col max-w-[125px] md:max-w-[300px] overflow-hidden whitespace-nowrap">
+              <Link
+                href={track.external_urls.spotify}
+                className="font-semibold text-sm md:text-md truncate"
+              >
+                {track.name}
+              </Link>
+              <ol className="flex items-center gap-1 text-xs md:text-sm">
+                {
+                  // @ts-ignore
+                  artistLinks.reduce((prev, curr) => [prev, '·', curr])
+                }
+              </ol>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs md:text-sm text-white/50 mr-1 md:mr-2">
+              {durationString}
+            </span>
+            <PlayTrack audioUrl={track.preview_url} />
+            <DownloadTrack track={track} />
+          </div>
         </div>
       </div>
-    </div>
+      )}
+    </>
   );
 };
 

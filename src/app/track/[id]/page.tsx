@@ -23,7 +23,7 @@ const Track = async ({ params }: { params: { id: string } }) => {
         {track ? (
           <div className="bg-white/5 border border-white/10 w-full backdrop-blur-md p-5 rounded-xl flex flex-col gap-5 text-text">
             <PlayerProvider>
-              <TrackInfo track={track} />{' '}
+              <TrackInfo track={track} type='Track' />{' '}
             </PlayerProvider>
           </div>
         ) : null}
