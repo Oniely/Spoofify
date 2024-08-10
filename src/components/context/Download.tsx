@@ -58,10 +58,7 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
         setProgress(0);
       } else if (type === 'album') {
         // @ts-ignore
-        const { blob, filename } = await downloadPlaylist(
-          currentDownload,
-          true
-        );
+        const { blob, filename } = await downloadPlaylist(currentDownload, true);
         await downloadBlob(blob, filename);
         setProgress(0);
       }
@@ -128,9 +125,8 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
         for (const item of chunkItems) {
           // @ts-ignore
           async function downloadWithProgress() {
-            let currentItem = isAlbum ? { ...item } : { ...item.track };
             const track = await downloadTrack(
-              { currentItem, speed: playlist.speed },
+              { ...item.track, speed: playlist.speed },
               // @ts-ignore
               ffmpeg
             );
@@ -230,7 +226,7 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
     // and recheck if the download is now functional
     // focus on single track downlaod for now...
     try {
-      console.log("METADATA TRACK: ", track);
+      console.log('METADATA TRACK: ', track);
       // Fetch cover
       const cover = await fetchCover(track.album.images[0].url);
       const writer = new ID3Writer(buffer);
