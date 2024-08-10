@@ -37,7 +37,7 @@ const Queue = () => {
                       src={
                         item.type === "playlist"
                           ? item.images[0].url
-                          : item.album?.images[0].url || ""
+                          : item.album?.images[0].url
                       }
                       className="rounded-full"
                       width={20}
@@ -52,7 +52,7 @@ const Queue = () => {
                   src={
                     currentDownload.type === "playlist"
                       ? currentDownload.images[0].url
-                      : currentDownload.album?.images[0].url || ""
+                      : currentDownload.album?.images[0].url
                   }
                   className="rounded-full"
                   width={20}
@@ -89,7 +89,7 @@ const Queue = () => {
                   src={
                     currentDownload.type === "playlist"
                       ? currentDownload.images[0].url
-                      : currentDownload.album?.images[0].url || ""
+                      : currentDownload.album?.images[0].url
                   }
                   width={165}
                   height={165}

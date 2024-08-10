@@ -226,9 +226,13 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
   };
 
   async function addMetadata(buffer: any, track: any) {
+    // work on fetching the album image for album download
+    // and recheck if the download is now functional
+    // focus on single track downlaod for now...
     try {
+      console.log("METADATA TRACK: ", track);
       // Fetch cover
-      const cover = await fetchCover(track.album?.images[0].url);
+      const cover = await fetchCover(track.album.images[0].url);
       const writer = new ID3Writer(buffer);
       writer
         .setFrame('TIT2', track.name)
