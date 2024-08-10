@@ -9,7 +9,6 @@ const ytSearch = require('youtube-sr').default;
 // MAIN FUNCTIONS
 export const downloadTrack = async (track: any, silent = true) => {
   try {
-    console.log('trying downloadTrack()');
     if (!silent && track) {
       console.log(
         `[${serverTimestamp()}]: Downloading ${track.name} by ${

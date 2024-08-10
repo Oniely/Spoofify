@@ -1,17 +1,23 @@
-"use client";
+'use client';
 
-import { downloadBlob, getFilenameFromHeaders } from "@/lib/utils";
-import React, { createContext, useState, useContext, useEffect, ReactNode } from "react";
-import Queue from "@/components/Queue";
-import axios from "axios";
-import { FFmpeg } from "@ffmpeg/ffmpeg";
-import { fetchFile } from "@ffmpeg/util";
-import { ID3Writer } from "browser-id3-writer";
-import JSZip from "jszip";
-import { v4 as uuidv4 } from "uuid";
-import DownloadDialog from "@/components/DownloadDialog";
+import { downloadBlob, getFilenameFromHeaders } from '@/lib/utils';
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  ReactNode,
+} from 'react';
+import Queue from '@/components/Queue';
+import axios from 'axios';
+import { FFmpeg } from '@ffmpeg/ffmpeg';
+import { fetchFile } from '@ffmpeg/util';
+import { ID3Writer } from 'browser-id3-writer';
+import JSZip from 'jszip';
+import { v4 as uuidv4 } from 'uuid';
+import DownloadDialog from '@/components/DownloadDialog';
 
-const DownloaderContext = createContext<any>("");
+const DownloaderContext = createContext<any>('');
 export const useDownloader = () => useContext(DownloaderContext);
 
 export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
@@ -38,17 +44,22 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
     const download = async () => {
       // Get downloadable type
       const type = currentDownload.type;
-
+      console.log('Download Type: ', type);
       // Handle different types of downloadables
-      if (type === "playlist") {
+      if (type === 'playlist') {
         // @ts-ignore
         const { blob, filename } = await downloadPlaylist(currentDownload);
         await downloadBlob(blob, filename);
         setProgress(0);
-      } else if (type === "track") {
+      } else if (type === 'track') {
         // @ts-ignore
         const { buffer, filename } = await downloadTrack(currentDownload);
         await downloadBlob(buffer, filename);
+        setProgress(0);
+      } else if (type === 'album') {
+        // @ts-ignore
+        const { blob, filename } = await downloadPlaylist(currentDownload, true);
+        await downloadBlob(blob, filename);
         setProgress(0);
       }
 
@@ -88,7 +99,7 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [queue, downloading]);
 
-  const downloadPlaylist = async (playlist: any) => {
+  const downloadPlaylist = async (playlist: any, isAlbum: boolean = false) => {
     try {
       const items = playlist.tracks.items;
 
@@ -138,8 +149,8 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
       }
 
       // Get zip blob
-      const blob = await zip.generateAsync({ type: "blob" });
-      const filename = pathNamify(playlist.name) + ".zip";
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const filename = pathNamify(playlist.name) + '.zip';
 
       return { blob, filename };
     } catch (error) {
@@ -150,18 +161,18 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
   const downloadTrack = async (track: any, ffmpeg = null) => {
     // review each function especially the ytsearching and downloading
     try {
-      console.log('API downloadTrack')
+      console.log('API downloadTrack');
       // Download track
-      const response = await axios.post("/api/download/track", track, {
-        responseType: "blob",
+      const response = await axios.post('/api/download/track', track, {
+        responseType: 'blob',
       });
       let buffer = response.data;
-      console.log("received buffer");
+      console.log('received buffer');
       let filename = getFilenameFromHeaders(response.headers);
-      console.log("getFilenameFromHeaders: ", filename);
+      console.log('getFilenameFromHeaders: ', filename);
       // If mode == slow it should conver to mp3 and add metadata
-      console.log("Track Speed: ", track.speed)
-      if (track.speed === "slow") {
+      console.log('Track Speed: ', track.speed);
+      if (track.speed === 'slow') {
         // Convert to mp3
         buffer = await convert(response.data, ffmpeg);
         if (!buffer) return; // If any errors occur just return null
@@ -169,7 +180,7 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
         buffer = await addMetadata(buffer, track);
 
         // Change file extension
-        filename = filename.slice(0, -4) + ".mp3";
+        filename = filename.slice(0, -4) + '.mp3';
       }
 
       // Download blob with appropriate filename from headers
@@ -181,7 +192,7 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
 
   function pathNamify(path: string) {
     // @ts-ignore
-    return path.replace(/[^\p{L}\p{N}\p{P}\p{Z}^$\n]/gu, "");
+    return path.replace(/[^\p{L}\p{N}\p{P}\p{Z}^$\n]/gu, '');
   }
 
   const convert = async (trackBuffer: any, ffmpeg: any = null) => {
@@ -197,7 +208,7 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
       await ffmpeg.writeFile(`${id}.m4a`, await fetchFile(trackBuffer));
 
       // Execute FFmpeg command to convert mp4 to mp3
-      await ffmpeg.exec(["-i", `${id}.m4a`, `${id}.mp3`]);
+      await ffmpeg.exec(['-i', `${id}.m4a`, `${id}.mp3`]);
       const data = await ffmpeg.readFile(`${id}.mp3`);
 
       // Delete files
@@ -211,18 +222,22 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
   };
 
   async function addMetadata(buffer: any, track: any) {
+    // work on fetching the album image for album download
+    // and recheck if the download is now functional
+    // focus on single track downlaod for now...
     try {
+      console.log('METADATA TRACK: ', track);
       // Fetch cover
       const cover = await fetchCover(track.album.images[0].url);
       const writer = new ID3Writer(buffer);
       writer
-        .setFrame("TIT2", track.name)
-        .setFrame("TALB", track.album.name)
-        .setFrame("TRCK", `${track.disk_number}`)
-        .setFrame("TPE1", [
-          track.artists.map((artist: any) => artist.name).join("; "),
+        .setFrame('TIT2', track.name)
+        .setFrame('TALB', track.album.name)
+        .setFrame('TRCK', `${track.disk_number}`)
+        .setFrame('TPE1', [
+          track.artists.map((artist: any) => artist.name).join('; '),
         ])
-        .setFrame("APIC", {
+        .setFrame('APIC', {
           type: 3,
           data: cover,
           description: `${track.name} cover`,
@@ -237,7 +252,7 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
   async function fetchCover(url: string) {
     try {
       // Fetch the image
-      const response = await axios.get(url, { responseType: "arraybuffer" });
+      const response = await axios.get(url, { responseType: 'arraybuffer' });
 
       // Return the image data as a buffer
       return response.data;
@@ -247,7 +262,7 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const addDownload = (spotifyItem: any, speed: any) => {
-    console.log("ADDED TO DOWNLOAD");
+    console.log('ADDED TO DOWNLOAD');
 
     setQueue((prev: any) => [...prev, { ...spotifyItem, speed }]);
   };
@@ -261,14 +276,14 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
     const downloadedItem = downloadedItems.find(
       (downloadedItem: any) => item.id === downloadedItem.id
     );
-    
-    if (downloadedItem) return "downloaded";
 
-    if (item.id === currentDownload?.id) return "downloading";
+    if (downloadedItem) return 'downloaded';
+
+    if (item.id === currentDownload?.id) return 'downloading';
 
     // Check if
     const queuedItem = queue.find((queueItem: any) => item.id === queueItem.id);
-    if (queuedItem) return "queued";
+    if (queuedItem) return 'queued';
 
     return null;
   };

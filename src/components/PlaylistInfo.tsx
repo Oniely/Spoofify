@@ -26,14 +26,13 @@ const PlaylistInfo = ({ playlist }: { playlist: any }) => {
           <h1 className="font-bold text-2xl line-clamp-1">{playlist.name}</h1>
           <p
             className="line-clamp-5 prose text-white prose-a:text-gray-200"
-            dangerouslySetInnerHTML={{ __html: playlist.description }}
-          ></p>
+          >{playlist?.description || playlist.label}</p>
         </div>
         <div className="flex items-center gap-2.5 text-sm text-white/80">
           <DownloadPlaylist playlist={playlist} />
           <div className="flex flex-col text-xs">
-            <p>by {playlist.owner.display_name}</p>
-            <p>{playlist.followers.total} likes</p>
+            <p>by {playlist.owner?.display_name || playlist.artists[0].name }</p>
+            <p>{playlist.followers?.total || playlist.popularity } likes</p>
           </div>
         </div>
       </div>

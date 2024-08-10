@@ -3,10 +3,14 @@ import Link from 'next/link';
 import PlayTrack from './buttons/PlayTrack';
 import DownloadTrack from './buttons/DownloadTrack';
 
-const TrackInfo = ({ track }: { track: any }) => {
+interface Props {
+  track: any;
+}
+
+const TrackInfo = ({ track }: Props) => {
   if (!track) return;
 
-  const artistLinks = track.artists.map((artist: any) => (
+  const artistLinks = track?.artists && track.artists.map((artist: any) => (
     <Link
       key={artist.id}
       href={artist.external_urls.spotify}

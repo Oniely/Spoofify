@@ -25,7 +25,7 @@ const Search = () => {
         );
       }
 
-      if (type === 'playlist' || type === 'track') {
+      if (type === 'playlist' || type === 'track' || type === 'album') {
         router.push(`/${type}/${id}`);
       } else {
         throw Error(`Spotify ${type}s are not supported at this moment :(`);
