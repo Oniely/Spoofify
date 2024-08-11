@@ -58,7 +58,7 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
         setProgress(0);
       } else if (type === 'album') {
         // @ts-ignore
-        const { blob, filename } = await downloadPlaylist(currentDownload, true);
+        const { blob, filename } = await downloadAlbum(currentDownload);
         await downloadBlob(blob, filename);
         setProgress(0);
       }
@@ -99,7 +99,7 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [queue, downloading]);
 
-  const downloadPlaylist = async (playlist: any, isAlbum: boolean = false) => {
+  const downloadPlaylist = async (playlist: any) => {
     try {
       const items = playlist.tracks.items;
 
@@ -127,6 +127,65 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
           async function downloadWithProgress() {
             const track = await downloadTrack(
               { ...item.track, speed: playlist.speed },
+              // @ts-ignore
+              ffmpeg
+            );
+            setProgress((prev) => prev + (1 / playlist.tracks.total) * 100);
+            return track;
+          }
+          downloadPromises.push(downloadWithProgress());
+        }
+
+        // Wait for all downloads in the current chunk to complete
+        const downloads = await Promise.all(downloadPromises);
+
+        // Add downloaded tracks to the zip
+        downloads.forEach((download) => {
+          if (download) {
+            const { filename, buffer } = download;
+            zip.file(filename, buffer);
+          }
+        });
+      }
+
+      // Get zip blob
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const filename = pathNamify(playlist.name) + '.zip';
+
+      return { blob, filename };
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const downloadAlbum = async (playlist: any) => {
+    try {
+      const items = playlist.tracks.items;
+
+      // Create zip file
+      const zip = new JSZip();
+
+      // Load FFmpeg
+      const ffmpeg = new FFmpeg();
+      await ffmpeg.load();
+
+      // Download tracks by chunks of n size
+      const chunkSize = 10;
+      const totalChunks = Math.ceil(items.length / chunkSize);
+
+      // Iterate over chunks
+      for (let i = 0; i < totalChunks; i++) {
+        const chunkStart = i * chunkSize;
+        const chunkEnd = Math.min(chunkStart + chunkSize, items.length);
+        const chunkItems = items.slice(chunkStart, chunkEnd);
+
+        // Push download promises to the array
+        const downloadPromises = [];
+        for (const item of chunkItems) {
+          // @ts-ignore
+          async function downloadWithProgress() {
+            const track = await downloadTrack(
+              { ...item, speed: playlist.speed },
               // @ts-ignore
               ffmpeg
             );

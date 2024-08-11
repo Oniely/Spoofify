@@ -20,9 +20,13 @@ export const downloadTrack = async (track: any, silent = true) => {
     const id = await findYtId(track);
     console.log(`YoutubeID: https://youtube.com/watch?v=${id}`);
     let buffer = await downloadYT(id);
+
+    // sanitize string to be valid for byte string conversion(valid filename)
+    const sanitizeString = (str: string) => str.replace(/[^\x00-\x7F]/g, '');
     // Create filename
-    const filename =
-      pathNamify(`${track.name} by ${track.artists[0].name}`) + '.m4a';
+    const filename = sanitizeString(
+      pathNamify(`${track.name} by ${track.artists[0].name}`) + '.m4a'
+    );
 
     console.log('downloadTrack() filename: ', filename);
 
@@ -95,20 +99,20 @@ async function streamToBuffer(stream: any) {
     return new Promise((resolve, reject) => {
       const mp3Buffer: any = [];
       const outputStream = new PassThrough();
-      outputStream.on("error", (err) => {
+      outputStream.on('error', (err) => {
         reject(err);
       });
-      outputStream.on("end", () => {
+      outputStream.on('end', () => {
         const finalBuffer = Buffer.concat(mp3Buffer);
         resolve(finalBuffer);
       });
 
       stream.pipe(outputStream);
-      outputStream.on("data", (chunk) => {
+      outputStream.on('data', (chunk) => {
         mp3Buffer.push(chunk);
       });
 
-      outputStream.on("error", (err) => {
+      outputStream.on('error', (err) => {
         reject(err);
       });
     });

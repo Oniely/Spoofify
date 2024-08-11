@@ -35,7 +35,7 @@ const Queue = () => {
                   <li key={i}>
                     <Image
                       src={
-                        item.type === "playlist"
+                        (item.type === "playlist" || item.type === "album")
                           ? item.images[0].url
                           : item.album.images[0].url
                       }
@@ -50,7 +50,7 @@ const Queue = () => {
               <li>
                 <Image
                   src={
-                    currentDownload.type === "playlist"
+                    (currentDownload.type === "playlist" || currentDownload.type === "album")
                       ? currentDownload.images[0].url
                       : currentDownload.album?.images[0].url
                   }
@@ -87,7 +87,7 @@ const Queue = () => {
               <Link href={currentDownload.external_urls.spotify}>
                 <Image
                   src={
-                    currentDownload.type === "playlist"
+                    (currentDownload.type === "playlist"|| currentDownload.type === "album")
                       ? currentDownload.images[0].url
                       : currentDownload.album?.images[0].url
                     }
