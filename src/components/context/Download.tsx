@@ -16,6 +16,7 @@ import { ID3Writer } from 'browser-id3-writer';
 import JSZip from 'jszip';
 import { v4 as uuidv4 } from 'uuid';
 import DownloadDialog from '@/components/DownloadDialog';
+import { totalmem } from 'os';
 
 const DownloaderContext = createContext<any>('');
 export const useDownloader = () => useContext(DownloaderContext);
@@ -215,7 +216,10 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const downloadTrack = async (track: any, ffmpeg: FFmpeg | null | undefined = null) => {
+  const downloadTrack = async (
+    track: any,
+    ffmpeg: FFmpeg | null | undefined = null
+  ) => {
     // review each function especially the ytsearching and downloading
     try {
       console.log('API downloadTrack');
@@ -230,7 +234,7 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
       // If mode == slow it should conver to mp3 and add metadata
       if (track.speed === 'slow') {
         // Convert to mp3
-        buffer = await convert(response.data, ffmpeg);
+        buffer = await convert(buffer, ffmpeg);
         if (!buffer) return; // If any errors occur just return null
 
         buffer = await addMetadata(buffer, track);
@@ -251,29 +255,39 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
     return path.replace(/[^\p{L}\p{N}\p{P}\p{Z}^$\n]/gu, '');
   }
 
-  const convert = async (trackBuffer: any, ffmpeg: any = null) => {
+  const convert = async (
+    trackBuffer: any,
+    ffmpeg: any = null
+  ): Promise<ArrayBuffer> => {
+    const id = uuidv4();
+    const inputFileName = `${id}.m4a`;
+    const outputFileName = `${id}.mp3`;
+
     try {
+      // Initialize FFmpeg if not provided
       if (!ffmpeg) {
-        // Load FFmpeg
         ffmpeg = new FFmpeg();
         await ffmpeg.load();
       }
 
-      // Write the file
-      const id = uuidv4();
-      await ffmpeg.writeFile(`${id}.m4a`, await fetchFile(trackBuffer));
+      // Write the input file
+      await ffmpeg.writeFile(inputFileName, await fetchFile(trackBuffer));
 
-      // Execute FFmpeg command to convert mp4 to mp3
-      await ffmpeg.exec(['-i', `${id}.m4a`, `${id}.mp3`]);
-      const data = await ffmpeg.readFile(`${id}.mp3`);
+      // Convert m4a to mp3
+      await ffmpeg.exec(['-i', inputFileName, outputFileName]);
 
-      // Delete files
-      await ffmpeg.deleteFile(`${id}.m4a`);
-      await ffmpeg.deleteFile(`${id}.mp3`);
+      // Read the output file
+      const { buffer } = await ffmpeg.readFile(outputFileName);
 
-      return data.buffer;
+      return buffer;
     } catch (error) {
-      console.error(error);
+      console.error('Error in audio conversion:', error);
+      throw error; // Re-throw the error for proper handling
+    } finally {
+      await Promise.all([
+        ffmpeg.deleteFile(inputFileName),
+        ffmpeg.deleteFile(outputFileName),
+      ]);
     }
   };
 
@@ -282,7 +296,6 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
     // and recheck if the download is now functional
     // focus on single track downlaod for now...
     try {
-      console.log('METADATA TRACK: ', track);
       // Fetch cover
       const cover = await fetchCover(track.album.images[0].url);
       const writer = new ID3Writer(buffer);

@@ -93,32 +93,17 @@ const downloadYT = async (id: string): Promise<Buffer | undefined> => {
   }
 };
 
-async function streamToBuffer(stream: any): Promise<Buffer | undefined> {
-  try {
-    return new Promise((resolve, reject) => {
-      const mp3Buffer: any = [];
-      const outputStream = new PassThrough();
-      outputStream.on('error', (err) => {
-        reject(err);
-      });
-      outputStream.on('end', () => {
-        const finalBuffer = Buffer.concat(mp3Buffer);
-        resolve(finalBuffer);
-      });
+async function streamToBuffer(stream: any): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const chunks: any[] = [];
 
-      stream.pipe(outputStream);
-      outputStream.on('data', (chunk) => {
-        mp3Buffer.push(chunk);
-      });
-
-      outputStream.on('error', (err) => {
-        reject(err);
-      });
-    });
-  } catch (error) {
-    console.error(error);
-  }
+    stream.pipe(new PassThrough({ objectMode: false }))
+      .on('data', (chunk: any) => chunks.push(chunk))
+      .on('error', reject)
+      .on('end', () => resolve(Buffer.concat(chunks)));
+  });
 }
+
 
 // UTIL FUNCTIONS
 const pathNamify = (path: string) => {
