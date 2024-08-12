@@ -50,8 +50,7 @@ const TrackInfo = ({ track }: Props) => {
             </Link>
             <ol className="flex items-center gap-1 text-xs md:text-sm">
               {
-                // @ts-ignore
-                artistLinks.reduce((prev, curr) => [prev, '·', curr])
+                artistLinks.reduce((prev: any, curr: any) => [prev, '·', curr])
               }
             </ol>
           </div>

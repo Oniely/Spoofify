@@ -127,7 +127,6 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
           async function downloadWithProgress() {
             const track = await downloadTrack(
               { ...item.track, speed: playlist.speed },
-              // @ts-ignore
               ffmpeg
             );
             setProgress((prev) => prev + (1 / playlist.tracks.total) * 100);
@@ -186,7 +185,6 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
           async function downloadWithProgress() {
             const track = await downloadTrack(
               { ...item, speed: playlist.speed },
-              // @ts-ignore
               ffmpeg
             );
             setProgress((prev) => prev + (1 / playlist.tracks.total) * 100);
@@ -217,7 +215,7 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const downloadTrack = async (track: any, ffmpeg = null) => {
+  const downloadTrack = async (track: any, ffmpeg: FFmpeg | null | undefined = null) => {
     // review each function especially the ytsearching and downloading
     try {
       console.log('API downloadTrack');
@@ -228,9 +226,8 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
       let buffer = response.data;
       console.log('received buffer');
       let filename = getFilenameFromHeaders(response.headers);
-      console.log('getFilenameFromHeaders: ', filename);
+      console.log(filename);
       // If mode == slow it should conver to mp3 and add metadata
-      console.log('Track Speed: ', track.speed);
       if (track.speed === 'slow') {
         // Convert to mp3
         buffer = await convert(response.data, ffmpeg);

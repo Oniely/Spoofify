@@ -19,6 +19,7 @@ export const downloadTrack = async (track: any, silent = true) => {
     // Find and download YouTube video
     const id = await findYtId(track);
     console.log(`YoutubeID: https://youtube.com/watch?v=${id}`);
+    console.log('Track: ', track.name);
     let buffer = await downloadYT(id);
 
     // sanitize string to be valid for byte string conversion(valid filename)
@@ -43,7 +44,7 @@ const findYtId = async (track: any) => {
     const query = `${track.name} by ${track.artists[0].name} official`;
 
     // Get search data
-    const videos = await ytSearch.search(query, { limit: 3, type: 'video' });
+    const videos = await ytSearch.search(query, { limit: 5, type: 'video' });
 
     // Find closest to the track's duration
     let closestDuration = null;
@@ -72,29 +73,27 @@ const findYtId = async (track: any) => {
   }
 };
 
-const downloadYT = async (id: string) => {
+const downloadYT = async (id: string): Promise<Buffer | undefined> => {
   try {
-    console.log('trying downloadYT()');
+    console.log(`downloadYT(${id})`);
     // Get info
     const info = await ytdl.getInfo(`https://www.youtube.com/watch?v=${id}`);
-    console.log('INFO');
     // Choose the highest quality audio format
     const audioFormat = ytdl.chooseFormat(info.formats, {
       quality: 'highestaudio',
     });
-    console.log('audioFormat');
 
     // Get audio stream and process it
     const audioStream = ytdl.downloadFromInfo(info, { format: audioFormat });
     const buffer = streamToBuffer(audioStream);
-
+    
     return buffer;
   } catch (error) {
     console.error(error);
   }
 };
 
-async function streamToBuffer(stream: any) {
+async function streamToBuffer(stream: any): Promise<Buffer | undefined> {
   try {
     return new Promise((resolve, reject) => {
       const mp3Buffer: any = [];
