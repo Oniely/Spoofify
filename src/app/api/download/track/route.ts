@@ -1,7 +1,7 @@
 import { downloadTrack } from "@/lib/downloader";
 import { NextResponse } from "next/server";
 
-export const POST = async (request: { json: () => any; }, response: { headers: HeadersInit | undefined; }) => {
+export const POST = async (request: any, response: any) => {
   const track = await request.json();
 
   try {
