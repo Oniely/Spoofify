@@ -62,7 +62,6 @@ export async function getAlbum(id: string) {
   try {
     let album = await getRequest(`https://api.spotify.com/v1/albums/${id}`);
 
-    let { next } = album.tracks;
     const albumImage = album.images.length > 0 ? album.images[0].url : null;
 
     album.tracks.items = album.tracks.items.map((track: any) => ({

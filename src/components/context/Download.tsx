@@ -1,6 +1,5 @@
 'use client';
 
-import { downloadBlob, getFilenameFromHeaders } from '@/lib/utils';
 import React, {
   createContext,
   useState,
@@ -16,55 +15,102 @@ import { ID3Writer } from 'browser-id3-writer';
 import JSZip from 'jszip';
 import { v4 as uuidv4 } from 'uuid';
 import DownloadDialog from '@/components/DownloadDialog';
-import { totalmem } from 'os';
+import { downloadBlob, getFilenameFromHeaders } from '@/lib/utils';
 
-const DownloaderContext = createContext<any>('');
+type Track = {
+  album: {
+    images: [
+      {
+        url: string;
+        height: number;
+        width: number;
+      }
+    ];
+    name: string;
+    type: string;
+    uri: string;
+    artists: [
+      {
+        external_urls: {
+          spotify: string;
+        };
+        href: string;
+        id: string;
+        name: string;
+        type: string;
+        uri: string;
+      }
+    ];
+  };
+  artists: [
+    {
+      external_urls: {
+        spotify: string;
+      };
+      href: string;
+      id: string;
+      name: string;
+      type: string;
+      uri: string;
+    }
+  ];
+  external_urls: {
+    spotify: string;
+  };
+  href: string;
+  id: string;
+  name: string;
+  popularity: number;
+  preview_url: string;
+  type: string;
+  uri: string;
+  track_number: number;
+  duration_ms: number;
+  disc_number: number;
+};
+
+type Playlist = {
+  name: string;
+  tracks: {
+    items: { name: string, track: Track }[];
+    total: number;
+  };
+  speed: 'slow' | 'fast';
+  type: string;
+};
+
+const DownloaderContext = createContext<any>(null);
 export const useDownloader = () => useContext(DownloaderContext);
 
 export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
-  // List of tracks or playlists
-  const [queue, setQueue] = useState<any>([]);
-
-  // Current track or playlist being downloaded
-  const [currentDownload, setCurrentDownload] = useState<any>(null);
-
-  // Already downloaded playlists or tracks
-  const [downloadedItems, setDownloadedItems] = useState<any>([]);
-
-  // Trigger for downloading state
+  const [queue, setQueue] = useState<any[]>([]);
+  const [currentDownload, setCurrentDownload] = useState<any | null>(null);
+  const [downloadedItems, setDownloadedItems] = useState<any[]>([]);
   const [downloading, setDownloading] = useState(false);
-
-  // Progress
   const [progress, setProgress] = useState(0);
-
-  // Download dialog
-  const [dialogItem, setDialogItem] = useState(null);
-  const [defaultSpeed, setDefaultSpeed] = useState(null);
+  const [dialogItem, setDialogItem] = useState<any | null>(null);
+  const [defaultSpeed, setDefaultSpeed] = useState<'slow' | 'fast' | null>(
+    null
+  );
 
   useEffect(() => {
     const download = async () => {
-      // Get downloadable type
       const type = currentDownload.type;
-      console.log('Download Type: ', type);
-      // Handle different types of downloadables
+
       if (type === 'playlist') {
-        // @ts-ignore
-        const { blob, filename } = await downloadPlaylist(currentDownload);
+        const { blob, filename } = await downloadPlaylist(currentDownload, "Playlist");
         await downloadBlob(blob, filename);
-        setProgress(0);
       } else if (type === 'track') {
         // @ts-ignore
         const { buffer, filename } = await downloadTrack(currentDownload);
         await downloadBlob(buffer, filename);
-        setProgress(0);
       } else if (type === 'album') {
-        // @ts-ignore
         const { blob, filename } = await downloadAlbum(currentDownload);
         await downloadBlob(blob, filename);
-        setProgress(0);
       }
 
       addToDownloaded(currentDownload);
+      setProgress(0);
       setDownloading(false);
     };
 
@@ -73,180 +119,120 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [currentDownload]);
 
-  // Trigger to move from track to track
   useEffect(() => {
     const nextInQueue = () => {
       if (queue.length !== 0) {
-        // Get first item in list
         const next = queue[0];
-
-        // Remove the item from the state
-        setQueue((prev: any) => [...prev.slice(1, prev.length)]);
+        setQueue((prev) => [...prev.slice(1, prev.length)]);
         return next;
       }
-
-      // Return null if no items in list
       return null;
     };
 
     if (queue.length !== 0 && !downloading) {
-      // Set the download to next in queue
       const next = nextInQueue();
       setCurrentDownload(next || null);
       setDownloading(true);
     } else if (!downloading) {
-      // On finish remove the last download
       setCurrentDownload(null);
     }
   }, [queue, downloading]);
 
-  const downloadPlaylist = async (playlist: any) => {
+  const downloadPlaylist = async (
+    playlist: Playlist,
+    type: 'Playlist' | 'Album'
+  ) => {
     try {
       const items = playlist.tracks.items;
-
-      // Create zip file
       const zip = new JSZip();
 
-      // Load FFmpeg
-      const ffmpeg = new FFmpeg();
+      let ffmpeg = new FFmpeg();
       await ffmpeg.load();
 
-      // Download tracks by chunks of n size
       const chunkSize = 10;
       const totalChunks = Math.ceil(items.length / chunkSize);
 
-      // Iterate over chunks
+      let loopNum = 0;
+
       for (let i = 0; i < totalChunks; i++) {
+        if (!ffmpeg.loaded) {
+          console.log("LOADING FFMPEG")
+          ffmpeg = new FFmpeg();
+          await ffmpeg.load();
+        }
+
         const chunkStart = i * chunkSize;
         const chunkEnd = Math.min(chunkStart + chunkSize, items.length);
         const chunkItems = items.slice(chunkStart, chunkEnd);
 
-        // Push download promises to the array
-        const downloadPromises = [];
-        for (const item of chunkItems) {
-          // @ts-ignore
-          async function downloadWithProgress() {
-            const track = await downloadTrack(
-              { ...item.track, speed: playlist.speed },
-              ffmpeg
-            );
+        const tracks = chunkItems.map(item => (type === "Playlist" ? item.track.name : item.name));
+
+        console.log("Chunk Size: ", chunkItems.length);
+        console.log("Chunk Items: ", tracks);
+
+        const downloadPromises = chunkItems.map((item) => {
+          let track: any = type === "Playlist" ? { ...item.track } : { ...item };
+          
+          return downloadTrack(
+            { ...track, speed: playlist.speed },
+            ffmpeg,
+            loopNum
+          ).then((track) => {
             setProgress((prev) => prev + (1 / playlist.tracks.total) * 100);
             return track;
-          }
-          downloadPromises.push(downloadWithProgress());
-        }
+          });
+        });
 
-        // Wait for all downloads in the current chunk to complete
         const downloads = await Promise.all(downloadPromises);
-
-        // Add downloaded tracks to the zip
         downloads.forEach((download) => {
           if (download) {
             const { filename, buffer } = download;
             zip.file(filename, buffer);
           }
         });
+
+        ffmpeg.terminate();
       }
 
-      // Get zip blob
       const blob = await zip.generateAsync({ type: 'blob' });
       const filename = pathNamify(playlist.name) + '.zip';
 
       return { blob, filename };
     } catch (error) {
-      console.error(error);
+      console.error('Error in downloadPlaylist:', error);
+      throw error;
     }
   };
 
-  const downloadAlbum = async (playlist: any) => {
-    try {
-      const items = playlist.tracks.items;
-
-      // Create zip file
-      const zip = new JSZip();
-
-      // Load FFmpeg
-      const ffmpeg = new FFmpeg();
-      await ffmpeg.load();
-
-      // Download tracks by chunks of n size
-      const chunkSize = 10;
-      const totalChunks = Math.ceil(items.length / chunkSize);
-
-      // Iterate over chunks
-      for (let i = 0; i < totalChunks; i++) {
-        const chunkStart = i * chunkSize;
-        const chunkEnd = Math.min(chunkStart + chunkSize, items.length);
-        const chunkItems = items.slice(chunkStart, chunkEnd);
-
-        // Push download promises to the array
-        const downloadPromises = [];
-        for (const item of chunkItems) {
-          // @ts-ignore
-          async function downloadWithProgress() {
-            const track = await downloadTrack(
-              { ...item, speed: playlist.speed },
-              ffmpeg
-            );
-            setProgress((prev) => prev + (1 / playlist.tracks.total) * 100);
-            return track;
-          }
-          downloadPromises.push(downloadWithProgress());
-        }
-
-        // Wait for all downloads in the current chunk to complete
-        const downloads = await Promise.all(downloadPromises);
-
-        // Add downloaded tracks to the zip
-        downloads.forEach((download) => {
-          if (download) {
-            const { filename, buffer } = download;
-            zip.file(filename, buffer);
-          }
-        });
-      }
-
-      // Get zip blob
-      const blob = await zip.generateAsync({ type: 'blob' });
-      const filename = pathNamify(playlist.name) + '.zip';
-
-      return { blob, filename };
-    } catch (error) {
-      console.error(error);
-    }
+  const downloadAlbum = async (playlist: Playlist) => {
+    return downloadPlaylist(playlist, "Album");
   };
 
   const downloadTrack = async (
-    track: any,
-    ffmpeg: FFmpeg | null | undefined = null
+    track: Track & { speed: 'slow' | 'fast' },
+    ffmpeg: FFmpeg,
+    loopNum: number
   ) => {
-    // review each function especially the ytsearching and downloading
     try {
-      console.log('API downloadTrack');
-      // Download track
       const response = await axios.post('/api/download/track', track, {
         responseType: 'blob',
       });
+
       let buffer = response.data;
-      console.log('received buffer');
       let filename = getFilenameFromHeaders(response.headers);
-      console.log(filename);
-      // If mode == slow it should conver to mp3 and add metadata
+
       if (track.speed === 'slow') {
-        // Convert to mp3
-        buffer = await convert(buffer, ffmpeg);
-        if (!buffer) return; // If any errors occur just return null
+        buffer = await convert(buffer, ffmpeg, loopNum);
+        if (!buffer) return null;
 
         buffer = await addMetadata(buffer, track);
-
-        // Change file extension
         filename = filename.slice(0, -4) + '.mp3';
       }
 
-      // Download blob with appropriate filename from headers
       return { buffer, filename };
     } catch (error) {
-      console.error(error);
+      console.error('Error in downloadTrack:', error);
+      return null;
     }
   };
 
@@ -255,57 +241,59 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
     return path.replace(/[^\p{L}\p{N}\p{P}\p{Z}^$\n]/gu, '');
   }
 
-  const convert = async (
-    trackBuffer: any,
-    ffmpeg: any = null
-  ): Promise<ArrayBuffer> => {
+  async function convert(
+    trackBuffer: Blob,
+    ffmpeg: FFmpeg,
+    loopNum: number
+  ): Promise<ArrayBuffer | null> {
     const id = uuidv4();
     const inputFileName = `${id}.m4a`;
     const outputFileName = `${id}.mp3`;
 
     try {
-      // Initialize FFmpeg if not provided
       if (!ffmpeg) {
         ffmpeg = new FFmpeg();
         await ffmpeg.load();
       }
 
-      // Write the input file
+      if (!ffmpeg.loaded) {
+        ffmpeg = new FFmpeg();
+        await ffmpeg.load();
+      }
+
       await ffmpeg.writeFile(inputFileName, await fetchFile(trackBuffer));
-
-      // Convert m4a to mp3
       await ffmpeg.exec(['-i', inputFileName, outputFileName]);
+      const data = await ffmpeg.readFile(outputFileName);
 
-      // Read the output file
-      const { buffer } = await ffmpeg.readFile(outputFileName);
-
-      return buffer;
+      // @ts-ignore
+      return data.buffer;
     } catch (error) {
       console.error('Error in audio conversion:', error);
-      throw error; // Re-throw the error for proper handling
+      return null;
     } finally {
-      await Promise.all([
-        ffmpeg.deleteFile(inputFileName),
-        ffmpeg.deleteFile(outputFileName),
-      ]);
+      try {
+        await Promise.all([
+          ffmpeg.deleteFile(inputFileName),
+          ffmpeg.deleteFile(outputFileName),
+        ]);
+      } catch (error) {
+        console.warn('Error during cleanup:', error);
+      }
     }
-  };
+  }
 
-  async function addMetadata(buffer: any, track: any) {
-    // work on fetching the album image for album download
-    // and recheck if the download is now functional
-    // focus on single track downlaod for now...
+  async function addMetadata(buffer: ArrayBuffer, track: Track) {
     try {
-      // Fetch cover
       const cover = await fetchCover(track.album.images[0].url);
       const writer = new ID3Writer(buffer);
       writer
         .setFrame('TIT2', track.name)
         .setFrame('TALB', track.album.name)
-        .setFrame('TRCK', `${track.disk_number}`)
-        .setFrame('TPE1', [
-          track.artists.map((artist: any) => artist.name).join('; '),
-        ])
+        .setFrame('TRCK', `${track.disc_number}`)
+        .setFrame(
+          'TPE1',
+          track.artists.map((artist) => artist.name)
+        )
         .setFrame('APIC', {
           type: 3,
           data: cover,
@@ -314,44 +302,41 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
 
       return writer.addTag();
     } catch (error) {
-      console.error(error);
+      console.error('Error in addMetadata:', error);
+      return null;
     }
   }
 
   async function fetchCover(url: string) {
     try {
-      // Fetch the image
       const response = await axios.get(url, { responseType: 'arraybuffer' });
-
-      // Return the image data as a buffer
       return response.data;
     } catch (error) {
-      console.error(error);
+      console.error('Error in fetchCover:', error);
+      return null;
     }
   }
 
-  const addDownload = (spotifyItem: any, speed: any) => {
-    console.log('ADDED TO DOWNLOAD');
-
-    setQueue((prev: any) => [...prev, { ...spotifyItem, speed }]);
+  const addDownload = (
+    spotifyItem: Track | Playlist,
+    speed: 'slow' | 'fast'
+  ) => {
+    setQueue((prev) => [...prev, { ...spotifyItem, speed }]);
   };
 
   const addToDownloaded = (item: any) => {
-    setDownloadedItems((prev: any) => [...prev, item]);
+    setDownloadedItems((prev) => [...prev, item]);
   };
 
   const itemState = (item: any) => {
-    // Check if already downloaded
     const downloadedItem = downloadedItems.find(
-      (downloadedItem: any) => item.id === downloadedItem.id
+      (downloadedItem) => item.id === downloadedItem.id
     );
-
     if (downloadedItem) return 'downloaded';
 
     if (item.id === currentDownload?.id) return 'downloading';
 
-    // Check if
-    const queuedItem = queue.find((queueItem: any) => item.id === queueItem.id);
+    const queuedItem = queue.find((queueItem) => item.id === queueItem.id);
     if (queuedItem) return 'queued';
 
     return null;
@@ -365,7 +350,6 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
     setDialogItem(null);
   };
 
-  // Value object to be passed as context value
   const value = {
     addDownload,
     currentDownload,

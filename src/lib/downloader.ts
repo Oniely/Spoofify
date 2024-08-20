@@ -7,7 +7,7 @@ import { PassThrough } from 'stream';
 const ytSearch = require('youtube-sr').default;
 
 // MAIN FUNCTIONS
-export const downloadTrack = async (track: any, silent = true) => {
+export const downloadTrack = async (track: any, silent = false) => {
   try {
     if (!silent && track) {
       console.log(
@@ -18,9 +18,7 @@ export const downloadTrack = async (track: any, silent = true) => {
     }
     // Find and download YouTube video
     const id = await findYtId(track);
-    console.log(`YoutubeID: https://youtube.com/watch?v=${id}`);
-    console.log('Track: ', track.name);
-    let buffer = await downloadYT(id);
+    const buffer = await downloadYT(id);
 
     // sanitize string to be valid for byte string conversion(valid filename)
     const sanitizeString = (str: string) => str.replace(/[^\x00-\x7F]/g, '');
@@ -28,9 +26,7 @@ export const downloadTrack = async (track: any, silent = true) => {
     const filename = sanitizeString(
       pathNamify(`${track.name} by ${track.artists[0].name}`) + '.m4a'
     );
-
-    console.log('downloadTrack() filename: ', filename);
-
+    
     return { buffer, filename };
   } catch (error) {
     console.error(error);
@@ -40,8 +36,7 @@ export const downloadTrack = async (track: any, silent = true) => {
 // SUB FUNCTIONS
 const findYtId = async (track: any) => {
   try {
-    console.log('trying fintYtId()');
-    const query = `${track.name} by ${track.artists[0].name} official`;
+    const query = `${track.name} ${track.artists[0].name} official`;
 
     // Get search data
     const videos = await ytSearch.search(query, { limit: 5, type: 'video' });
@@ -75,7 +70,6 @@ const findYtId = async (track: any) => {
 
 const downloadYT = async (id: string): Promise<Buffer | undefined> => {
   try {
-    console.log(`downloadYT(${id})`);
     // Get info
     const info = await ytdl.getInfo(`https://www.youtube.com/watch?v=${id}`);
     // Choose the highest quality audio format
@@ -97,9 +91,9 @@ async function streamToBuffer(stream: any): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const chunks: any[] = [];
 
-    stream.pipe(new PassThrough({ objectMode: false }))
+    stream.pipe(new PassThrough())
       .on('data', (chunk: any) => chunks.push(chunk))
-      .on('error', reject)
+      .on('error', (err: any) => reject(err))
       .on('end', () => resolve(Buffer.concat(chunks)));
   });
 }
