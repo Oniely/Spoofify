@@ -72,7 +72,7 @@ type Track = {
 type Playlist = {
   name: string;
   tracks: {
-    items: { name: string, track: Track }[];
+    items: { name: string; track: Track }[];
     total: number;
   };
   speed: 'slow' | 'fast';
@@ -98,7 +98,10 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
       const type = currentDownload.type;
 
       if (type === 'playlist') {
-        const { blob, filename } = await downloadPlaylist(currentDownload, "Playlist");
+        const { blob, filename } = await downloadPlaylist(
+          currentDownload,
+          'Playlist'
+        );
         await downloadBlob(blob, filename);
       } else if (type === 'track') {
         // @ts-ignore
@@ -152,11 +155,9 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
       const chunkSize = 10;
       const totalChunks = Math.ceil(items.length / chunkSize);
 
-      let loopNum = 0;
-
       for (let i = 0; i < totalChunks; i++) {
         if (!ffmpeg.loaded) {
-          console.log("LOADING FFMPEG")
+          console.log('LOADING FFMPEG');
           ffmpeg = new FFmpeg();
           await ffmpeg.load();
         }
@@ -165,18 +166,20 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
         const chunkEnd = Math.min(chunkStart + chunkSize, items.length);
         const chunkItems = items.slice(chunkStart, chunkEnd);
 
-        const tracks = chunkItems.map(item => (type === "Playlist" ? item.track.name : item.name));
+        const tracks = chunkItems.map((item) =>
+          type === 'Playlist' ? item.track.name : item.name
+        );
 
-        console.log("Chunk Size: ", chunkItems.length);
-        console.log("Chunk Items: ", tracks);
+        console.log('Chunk Size: ', chunkItems.length);
+        console.log('Chunk Items: ', tracks);
 
         const downloadPromises = chunkItems.map((item) => {
-          let track: any = type === "Playlist" ? { ...item.track } : { ...item };
-          
+          let track: any =
+            type === 'Playlist' ? { ...item.track } : { ...item };
+
           return downloadTrack(
             { ...track, speed: playlist.speed },
-            ffmpeg,
-            loopNum
+            ffmpeg
           ).then((track) => {
             setProgress((prev) => prev + (1 / playlist.tracks.total) * 100);
             return track;
@@ -205,13 +208,12 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const downloadAlbum = async (playlist: Playlist) => {
-    return downloadPlaylist(playlist, "Album");
+    return downloadPlaylist(playlist, 'Album');
   };
 
   const downloadTrack = async (
     track: Track & { speed: 'slow' | 'fast' },
-    ffmpeg: FFmpeg,
-    loopNum: number
+    ffmpeg: FFmpeg
   ) => {
     try {
       const response = await axios.post('/api/download/track', track, {
@@ -222,7 +224,7 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
       let filename = getFilenameFromHeaders(response.headers);
 
       if (track.speed === 'slow') {
-        buffer = await convert(buffer, ffmpeg, loopNum);
+        buffer = await convert(buffer, ffmpeg);
         if (!buffer) return null;
 
         buffer = await addMetadata(buffer, track);
@@ -243,8 +245,7 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
 
   async function convert(
     trackBuffer: Blob,
-    ffmpeg: FFmpeg,
-    loopNum: number
+    ffmpeg: FFmpeg
   ): Promise<ArrayBuffer | null> {
     const id = uuidv4();
     const inputFileName = `${id}.m4a`;
