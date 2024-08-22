@@ -248,8 +248,8 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
     ffmpeg: FFmpeg
   ): Promise<ArrayBuffer | null> {
     const id = uuidv4();
-    const inputFileName = `${id}.m4a`;
-    const outputFileName = `${id}.mp3`;
+    const inputFileName = `/tmp/${id}.m4a`;
+    const outputFileName = `/tmp/${id}.mp3`;
 
     try {
       if (!ffmpeg) {
