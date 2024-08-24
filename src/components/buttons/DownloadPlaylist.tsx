@@ -2,11 +2,11 @@
 
 import { FiDownload } from "react-icons/fi";
 import Spinner from "../Spinner";
-import { useDownloader } from "../context/Download";
+import { Playlist, useDownloader } from "../context/Download";
 import Check from "../Check";
 import { motion } from "framer-motion";
 
-const DownloadPlaylist = ({ playlist }: { playlist: any }) => {
+const DownloadPlaylist = ({ playlist }: { playlist: Playlist }) => {
   const { itemState, progress, openDialog, addDownload, defaultSpeed } =
     useDownloader();
 

@@ -1,5 +1,6 @@
 'use server';
 
+import { Playlist } from '@/components/context/Download';
 import axios from 'axios';
 
 export const getToken = async () => {
@@ -43,6 +44,16 @@ export async function getPlaylist(id: string) {
       next = nextTracks.next;
     }
 
+    playlist.tracks.items = playlist.tracks.items
+      .filter((item: any) => item.track)
+      .map((item: any, idx: number) => ({
+        ...item,
+        track: {
+          ...item.track,
+          order: idx + 1,
+        },
+      }));
+
     return playlist;
   } catch (error) {
     console.error(`Error fetching playlist: ${id}`);
@@ -64,21 +75,30 @@ export async function getAlbum(id: string) {
 
     const albumImage = album.images.length > 0 ? album.images[0].url : null;
 
+    let { next } = album.tracks;
+    while (next) {
+      const nextTracks = await getRequest(next);
+      album.tracks.items.push(...nextTracks.items);
+
+      next = nextTracks.next;
+    }
+
+    // add metadata
     album.tracks.items = album.tracks.items.map((track: any) => ({
       ...track,
       images: [
         {
-          url: albumImage
-        }
+          url: albumImage,
+        },
       ],
       album: {
         name: album.name,
         images: [
           {
-            url: albumImage
-          }
-        ]
-      }
+            url: albumImage,
+          },
+        ],
+      },
     }));
 
     return album;

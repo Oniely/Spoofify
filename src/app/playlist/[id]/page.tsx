@@ -1,19 +1,20 @@
-import HomeButton from "@/components/buttons/HomeButton";
-import PlaylistInfo from "@/components/PlaylistInfo";
-import TrackList from "@/components/TrackList";
-import Search from "@/components/Search";
+import HomeButton from '@/components/buttons/HomeButton';
+import PlaylistInfo from '@/components/PlaylistInfo';
+import TrackList from '@/components/TrackList';
+import Search from '@/components/Search';
 
-import { getPlaylist } from "@/lib/spotify";
-import { notFound } from "next/navigation";
+import { getPlaylist } from '@/lib/spotify';
+import { notFound } from 'next/navigation';
+import { Playlist as PlaylistType } from '@/components/context/Download';
 
 const Playlist = async ({ params }: { params: { id: string } }) => {
   const { id } = params;
 
-  const playlist = await getPlaylist(id);
+  const playlist: PlaylistType = await getPlaylist(id);
 
   if (!playlist) notFound();
 
-  // console.log(playlist.tracks.items);
+  // console.log(playlist.tracks.items)
 
   return (
     <div className="w-full flex justify-center">
@@ -31,7 +32,7 @@ const Playlist = async ({ params }: { params: { id: string } }) => {
         ) : null}
       </main>
     </div>
-  )
-}
+  );
+};
 
 export default Playlist;

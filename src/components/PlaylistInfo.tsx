@@ -1,8 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import DownloadPlaylist from "./buttons/DownloadPlaylist";
+import { Playlist } from "./context/Download";
 
-const PlaylistInfo = ({ playlist }: { playlist: any }) => {
+const PlaylistInfo = ({ playlist }: { playlist: Playlist }) => {
   return (
     <header className="bg-white/5 border border-white/10 w-full backdrop-blur-md p-5 rounded-xl flex flex-col sm:flex-row gap-5 md:max-h-[305px]">
       <Link

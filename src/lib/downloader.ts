@@ -4,10 +4,11 @@ import filenamify from 'filenamify';
 import { serverTimestamp } from './utils';
 import ytdl from '@distube/ytdl-core';
 import { PassThrough } from 'stream';
+import { Track } from '@/components/context/Download';
 const ytSearch = require('youtube-sr').default;
 
 // MAIN FUNCTIONS
-export const downloadTrack = async (track: any, silent = false) => {
+export const downloadTrack = async (track: Track, silent = false) => {
   try {
     if (!silent && track) {
       console.log(
@@ -34,9 +35,9 @@ export const downloadTrack = async (track: any, silent = false) => {
 };
 
 // SUB FUNCTIONS
-const findYtId = async (track: any) => {
+const findYtId = async (track: Track) => {
   try {
-    const query = `${track.name} ${track.artists[0].name} official`;
+    const query = `${track.name} by ${track.artists[0].name} official`;
 
     // Get search data
     const videos = await ytSearch.search(query, { limit: 5, type: 'video' });

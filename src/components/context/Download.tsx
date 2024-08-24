@@ -17,7 +17,7 @@ import { v4 as uuidv4 } from 'uuid';
 import DownloadDialog from '@/components/DownloadDialog';
 import { downloadBlob, getFilenameFromHeaders } from '@/lib/utils';
 
-type Track = {
+export interface Track {
   album: {
     images: [
       {
@@ -54,9 +54,6 @@ type Track = {
       uri: string;
     }
   ];
-  external_urls: {
-    spotify: string;
-  };
   href: string;
   id: string;
   name: string;
@@ -67,17 +64,53 @@ type Track = {
   track_number: number;
   duration_ms: number;
   disc_number: number;
-};
+  order: number;
+  external_urls: {
+    spotify: string
+  }
+}
 
-type Playlist = {
+export interface Playlist {
   name: string;
   tracks: {
     items: { name: string; track: Track }[];
     total: number;
+    next: string
   };
   speed: 'slow' | 'fast';
   type: string;
-};
+  external_urls: {
+    spotify: string;
+  };
+  images: [
+    {
+      url: string;
+      height: number;
+      width: number;
+    }
+  ];
+  description: string;
+  label: string;
+  owner: {
+    display_name: string;
+  };
+  followers: {
+    total: number;
+  };
+  popularity: number;
+  artists: [
+    {
+      external_urls: {
+        spotify: string;
+      };
+      href: string;
+      id: string;
+      name: string;
+      type: string;
+      uri: string;
+    }
+  ];
+}
 
 const DownloaderContext = createContext<any>(null);
 export const useDownloader = () => useContext(DownloaderContext);
@@ -152,7 +185,7 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
       let ffmpeg = new FFmpeg();
       await ffmpeg.load();
 
-      const chunkSize = 10;
+      const chunkSize = 15;
       const totalChunks = Math.ceil(items.length / chunkSize);
 
       for (let i = 0; i < totalChunks; i++) {
@@ -263,7 +296,19 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
       }
 
       await ffmpeg.writeFile(inputFileName, await fetchFile(trackBuffer));
-      await ffmpeg.exec(['-i', inputFileName, outputFileName]);
+      await ffmpeg.exec([
+        '-i',
+        inputFileName,
+        '-b:a',
+        '128k',
+        '-ac',
+        '2',
+        '-ar',
+        '32000',
+        '-map_metadata',
+        '-1',
+        outputFileName,
+      ]);
       const data = await ffmpeg.readFile(outputFileName);
 
       // @ts-ignore
@@ -290,7 +335,7 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
       writer
         .setFrame('TIT2', track.name)
         .setFrame('TALB', track.album.name)
-        .setFrame('TRCK', `${track.disc_number}`)
+        .setFrame('TRCK', `${track.order || track.track_number}`)
         .setFrame(
           'TPE1',
           track.artists.map((artist) => artist.name)
