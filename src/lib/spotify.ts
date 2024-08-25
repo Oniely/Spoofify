@@ -44,6 +44,11 @@ export async function getPlaylist(id: string) {
       next = nextTracks.next;
     }
 
+    playlist.tracks.items.sort(
+      (a: any, b: any) =>
+        new Date(a.added_at).getTime() - new Date(b.added_at).getTime()
+    );
+
     playlist.tracks.items = playlist.tracks.items
       .filter((item: any) => item.track)
       .map((item: any, idx: number) => ({
