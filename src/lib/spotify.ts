@@ -1,6 +1,5 @@
 'use server';
 
-import { Playlist } from '@/components/context/Download';
 import axios from 'axios';
 
 export const getToken = async () => {

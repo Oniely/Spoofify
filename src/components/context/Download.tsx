@@ -66,8 +66,8 @@ export interface Track {
   disc_number: number;
   order: number;
   external_urls: {
-    spotify: string
-  }
+    spotify: string;
+  };
 }
 
 export interface Playlist {
@@ -75,7 +75,7 @@ export interface Playlist {
   tracks: {
     items: { name: string; track: Track }[];
     total: number;
-    next: string
+    next: string;
   };
   speed: 'slow' | 'fast';
   type: string;
@@ -189,7 +189,7 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
       const totalChunks = Math.ceil(items.length / chunkSize);
 
       for (let i = 0; i < totalChunks; i++) {
-        if (!ffmpeg.loaded) {
+        if (!ffmpeg.loaded && playlist.speed === 'slow') {
           console.log('LOADING FFMPEG');
           ffmpeg = new FFmpeg();
           await ffmpeg.load();
@@ -253,11 +253,12 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
         responseType: 'blob',
       });
 
-      let buffer = response.data;
+      let blob = response.data;
+      let buffer = await blob.arrayBuffer();
       let filename = getFilenameFromHeaders(response.headers);
 
       if (track.speed === 'slow') {
-        buffer = await convert(buffer, ffmpeg);
+        buffer = await convert(blob, ffmpeg);
         if (!buffer) return null;
 
         buffer = await addMetadata(buffer, track);
@@ -277,8 +278,8 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
   }
 
   async function convert(
-    trackBuffer: Blob,
-    ffmpeg: FFmpeg
+    trackBufferBlob: Blob,
+    ffmpeg: FFmpeg,
   ): Promise<ArrayBuffer | null> {
     const id = uuidv4();
     const inputFileName = `/tmp/${id}.m4a`;
@@ -295,18 +296,13 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
         await ffmpeg.load();
       }
 
-      await ffmpeg.writeFile(inputFileName, await fetchFile(trackBuffer));
+      await ffmpeg.writeFile(inputFileName, await fetchFile(trackBufferBlob));
+      // prettier-ignore
       await ffmpeg.exec([
-        '-i',
-        inputFileName,
-        '-b:a',
-        '128k',
-        '-ac',
-        '2',
-        '-ar',
-        '32000',
-        '-map_metadata',
-        '-1',
+        '-i', inputFileName,
+        '-b:a', '128k', 
+        '-ac', '2',
+        '-ar', '32000',
         outputFileName,
       ]);
       const data = await ffmpeg.readFile(outputFileName);
