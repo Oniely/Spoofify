@@ -65,6 +65,7 @@ export interface Track {
   duration_ms: number;
   disc_number: number;
   order: number;
+  explicit: boolean;
   external_urls: {
     spotify: string;
   };
@@ -143,6 +144,10 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
       } else if (type === 'album') {
         const { blob, filename } = await downloadAlbum(currentDownload);
         await downloadBlob(blob, filename);
+      } else {
+        // @ts-ignore
+        const { buffer, filename } = await downloadTrack(currentDownload);
+        await downloadBlob(buffer, filename);
       }
 
       addToDownloaded(currentDownload);
@@ -253,12 +258,11 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
         responseType: 'blob',
       });
 
-      let blob = response.data;
-      let buffer = await blob.arrayBuffer();
+      let buffer = response.data;
       let filename = getFilenameFromHeaders(response.headers);
 
       if (track.speed === 'slow') {
-        buffer = await convert(blob, ffmpeg);
+        buffer = await convert(buffer, ffmpeg);
         if (!buffer) return null;
 
         buffer = await addMetadata(buffer, track);
@@ -279,7 +283,7 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
 
   async function convert(
     trackBufferBlob: Blob,
-    ffmpeg: FFmpeg,
+    ffmpeg: FFmpeg
   ): Promise<ArrayBuffer | null> {
     const id = uuidv4();
     const inputFileName = `/tmp/${id}.m4a`;
@@ -291,16 +295,11 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
         await ffmpeg.load();
       }
 
-      if (!ffmpeg.loaded) {
-        ffmpeg = new FFmpeg();
-        await ffmpeg.load();
-      }
-
       await ffmpeg.writeFile(inputFileName, await fetchFile(trackBufferBlob));
       // prettier-ignore
       await ffmpeg.exec([
         '-i', inputFileName,
-        '-b:a', '128k', 
+        '-b:a', '128k',
         '-ac', '2',
         '-ar', '32000',
         outputFileName,
