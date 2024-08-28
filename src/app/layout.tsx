@@ -10,8 +10,8 @@ export const metadata: Metadata = {
   description: 'Spoofify a spotify to mp3 downloader',
   icons: [
     {
-      url: '/spoofify.png',
-      href: '/spoofify.png',
+      url: '/logo.png',
+      href: '/logo.png',
     },
   ],
 };

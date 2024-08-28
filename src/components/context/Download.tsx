@@ -158,7 +158,7 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
     if (currentDownload) {
       download();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentDownload]);
 
   useEffect(() => {
@@ -295,6 +295,11 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
         ffmpeg = new FFmpeg();
         await ffmpeg.load();
       }
+
+      ffmpeg.on('log', ({ type, message }) => {
+        console.log(`TYPE: ${type}`);
+        console.log(`MESSAGE: ${message}`);
+      });
 
       await ffmpeg.writeFile(inputFileName, await fetchFile(trackBufferBlob));
       // prettier-ignore
