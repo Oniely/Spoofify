@@ -3,15 +3,15 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import Providers from '@/components/context/Providers';
 
-const inter = Inter({ subsets: ['latin'] });
+const font = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Spoofify',
   description: 'Spoofify a spotify to mp3 downloader',
   icons: [
     {
-      url: '/Spoofify.png',
-      href: '/Spoofify.png',
+      url: '/spoofify.png',
+      href: '/spoofify.png',
     },
   ],
 };
@@ -23,7 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={font.className}>
         <div className="w-full h-full fixed -z-10">
           <div className="absolute bottom-0 md:bottom-1/4 left-0 md:left-1/3 w-44 h-44 bg-accent rounded-full blur-[180px]" />
           <div className="absolute bottom-2/3 left-[100px] w-24 h-24 bg-accent rounded-full blur-[150px] hidden md:block" />
