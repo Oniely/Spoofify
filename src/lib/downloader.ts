@@ -36,7 +36,7 @@ export const downloadTrack = async (track: Track, silent = false) => {
 const findYtId = async (track: Track) => {
   try {
     let query = track.explicit
-      ? `${track.name} ${track.artists[0].name} "explicit" official music -instrumental`
+      ? `${track.name} ${track.artists[0].name} explicit official music -instrumental`
       : track.type === 'track' && track.artists.length > 0
       ? `${track.name} ${track.artists[0].name} official music -instrumental`
       : `${track.name} -instrumental`;

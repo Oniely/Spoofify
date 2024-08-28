@@ -158,6 +158,7 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
     if (currentDownload) {
       download();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentDownload]);
 
   useEffect(() => {
