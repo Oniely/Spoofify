@@ -296,11 +296,6 @@ export const DownloaderProvider = ({ children }: { children: ReactNode }) => {
         await ffmpeg.load();
       }
 
-      ffmpeg.on('log', ({ type, message }) => {
-        console.log(`TYPE: ${type}`);
-        console.log(`MESSAGE: ${message}`);
-      });
-
       await ffmpeg.writeFile(inputFileName, await fetchFile(trackBufferBlob));
       // prettier-ignore
       await ffmpeg.exec([
