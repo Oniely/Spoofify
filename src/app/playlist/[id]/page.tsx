@@ -16,7 +16,10 @@ const Playlist = async ({
   searchParams: { sort?: SortOption; order?: OrderOption };
 }) => {
   const { id } = params;
-  const { sort, order } = searchParams;
+  let { sort, order } = searchParams;
+
+  sort = sort || 'Date added';
+  order = order || 'asc';
 
   const playlist: PlaylistType = await getPlaylist(id, sort, order);
 

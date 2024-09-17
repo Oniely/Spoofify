@@ -32,8 +32,8 @@ export const getRequest = async (url: string) => {
 
 export async function getPlaylist(
   id: string,
-  sort?: SortOption,
-  order?: OrderOption
+  sort: SortOption,
+  order: OrderOption
 ) {
   try {
     let playlist = await getRequest(

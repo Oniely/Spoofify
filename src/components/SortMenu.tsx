@@ -14,7 +14,7 @@ const SortMenu = () => {
   const searchParams = useSearchParams();
 
   const initialOption =
-    (searchParams.get('sort') as SortOption) || 'Custom order';
+    (searchParams.get('sort') as SortOption) || 'Date added';
   const initialOrder = (searchParams.get('order') as OrderOption) || 'asc';
 
   const [isOpen, setIsOpen] = useState(false);
