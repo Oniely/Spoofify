@@ -25,8 +25,10 @@ const Search = () => {
         );
       }
 
-      if (type === 'playlist' || type === 'track' || type === 'album') {
+      if (type === 'track' || type === 'album') {
         router.push(`/${type}/${id}`);
+      } else if (type === 'playlist') {
+        router.push(`/${type}/${id}?sort=Custom order&order=asc`);
       } else {
         throw Error(`Spotify ${type}s are not supported at this moment :(`);
       }

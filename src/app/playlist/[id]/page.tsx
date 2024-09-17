@@ -6,11 +6,19 @@ import Search from '@/components/Search';
 import { getPlaylist } from '@/lib/spotify';
 import { notFound } from 'next/navigation';
 import { Playlist as PlaylistType } from '@/components/context/Download';
+import { OrderOption, SortOption } from '@/components/SortMenu';
 
-const Playlist = async ({ params }: { params: { id: string } }) => {
+const Playlist = async ({
+  params,
+  searchParams,
+}: {
+  params: { id: string };
+  searchParams: { sort?: SortOption; order?: OrderOption };
+}) => {
   const { id } = params;
+  const { sort, order } = searchParams;
 
-  const playlist: PlaylistType = await getPlaylist(id);
+  const playlist: PlaylistType = await getPlaylist(id, sort, order);
 
   if (!playlist) notFound();
 
@@ -23,7 +31,6 @@ const Playlist = async ({ params }: { params: { id: string } }) => {
           <HomeButton />
           <Search />
         </div>
-
         {playlist ? (
           <>
             <PlaylistInfo playlist={playlist} />
