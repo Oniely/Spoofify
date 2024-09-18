@@ -30,6 +30,10 @@ export const getRequest = async (url: string) => {
   return response.data;
 };
 
+function sortString(a: string, b: string) {
+  return a.localeCompare(b);
+}
+
 export async function getPlaylist(
   id: string,
   sort: SortOption,
@@ -49,33 +53,69 @@ export async function getPlaylist(
     }
 
     if (sort) {
-      // check order and determine the multiplier
-      // with the multiplier, if asc: 1 (remain the same) and desc: -1 (reverse the order)
-      // -1 * (a - b) vs 1 * (a - b)
-      const sortOrder = order === 'asc' ? 1 : -1;
+      let sortedItems = playlist.tracks.items;
+      const newOrder = order === 'asc' ? true : false;
 
-      if (sort === 'Date added') {
-        playlist.tracks.items.sort(
-          (
-            a: { added_at: string | number | Date },
-            b: { added_at: string | number | Date }
-          ) =>
-            sortOrder *
-            (new Date(a.added_at).getTime() - new Date(b.added_at).getTime())
-        );
-      } else if (sort === 'Custom order') {
-        const sortedItems =
-          order === 'desc'
-            ? playlist.tracks.items.slice().reverse()
-            : playlist.tracks.items.slice();
+      if (sort === 'Custom order') {
+        sortedItems = newOrder
+          ? playlist.tracks.items.slice()
+          : playlist.tracks.items.slice().reverse();
+      } else if (sort === 'Title') {
+        // we have to filter songs with track value in it,
+        // because spotify api have some weird behavior some songs are duplicated,
+        // and the track is empty
+        sortedItems = playlist.tracks.items
+          .slice()
+          .filter((item: { track: any }) => item.track)
+          .sort(
+            (a: { track: { name: string } }, b: { track: { name: string } }) =>
+              newOrder
+                ? sortString(a.track.name, b.track.name)
+                : sortString(b.track.name, a.track.name)
+          );
+      } else if (sort === 'Album') {
+        sortedItems = playlist.tracks.items
+          .slice()
+          .filter((item: { track: any }) => item.track)
+          .sort(
+            (
+              a: { track: { album: { name: string }; track_number: number } },
+              b: { track: { album: { name: string }; track_number: number } }
+            ) => {
+              const albumComparison = newOrder
+                ? sortString(a.track.album.name, b.track.album.name)
+                : sortString(b.track.album.name, a.track.album.name);
 
-        playlist.tracks.items = sortedItems
+              if (albumComparison === 0) {
+                return a.track.track_number - b.track.track_number;
+              }
+
+              return albumComparison;
+            }
+          );
+      } else if (sort === 'Date added') {
+        const sortOrder = newOrder ? 1 : -1;
+
+        sortedItems = playlist.tracks.items
+          .slice()
+          .sort(
+            (
+              a: { added_at: string | number | Date },
+              b: { added_at: string | number | Date }
+            ) =>
+              sortOrder *
+              (new Date(a.added_at).getTime() - new Date(b.added_at).getTime())
+          );
       }
+
+      playlist.tracks.items = sortedItems;
     }
 
+    // add track #, depending on the sorting preference of user
+    // filter songs with track value again to avoid duplication - see getPlaylist()
     playlist.tracks.items = playlist.tracks.items
-      .filter((item: any) => item.track)
-      .map((item: any, idx: number) => ({
+      .filter((item: { track: any }) => item.track)
+      .map((item: { track: any }, idx: number) => ({
         ...item,
         track: {
           ...item.track,

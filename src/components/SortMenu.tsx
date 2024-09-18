@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { IoIosList } from 'react-icons/io';
 import { AiOutlineArrowUp, AiOutlineArrowDown } from 'react-icons/ai';
 import { useSearchParams, useRouter } from 'next/navigation';
 
-const SORT_OPTIONS = ['Custom order', 'Date added'] as const;
+const SORT_OPTIONS = ['Custom order', 'Title', 'Album', 'Date added'] as const;
 export type SortOption = (typeof SORT_OPTIONS)[number];
 export type OrderOption = 'asc' | 'desc';
 

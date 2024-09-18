@@ -4,7 +4,12 @@ import PlayTrack from './buttons/PlayTrack';
 import DownloadTrack from './buttons/DownloadTrack';
 import { Track } from './context/Download';
 
-const TrackInfo = ({ track }: { track: Track }) => {
+interface Props {
+  track: Track;
+  isAlbum?: boolean;
+}
+
+const TrackInfo = ({ track, isAlbum }: Props) => {
   if (!track || !track.name) return;
 
   const durationString = `${Math.floor(track.duration_ms / 60000)}:${(
@@ -18,7 +23,9 @@ const TrackInfo = ({ track }: { track: Track }) => {
     <div className="flex justify-between items-center text-text">
       <div className="w-full flex items-center justify-between text-text">
         <div className="flex items-center gap-3">
-          <span className='text-white/50'>{track.order || track.track_number}</span>
+          <span className="text-white/50">
+            {track.order || track.track_number}
+          </span>
           <Link href={`${track.external_urls?.spotify}`}>
             <Image
               src={track.album?.images[0].url || ''}
@@ -47,6 +54,15 @@ const TrackInfo = ({ track }: { track: Track }) => {
                     {artist.name}
                   </Link>
                 ))}
+              {!isAlbum && (
+                <>
+                  <span>{' - '}</span>
+                  <Link
+                    href={`${track.album.external_urls?.spotify}`}
+                    className="text-white/60 text-xs md:text-sm hover:underline truncate"
+                  >{`${track.album.name}`}</Link>
+                </>
+              )}
             </ol>
           </div>
         </div>

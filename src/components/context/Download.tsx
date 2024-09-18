@@ -29,6 +29,9 @@ export interface Track {
     name: string;
     type: string;
     uri: string;
+    external_urls: {
+      spotify: string;
+    };
     artists: [
       {
         external_urls: {

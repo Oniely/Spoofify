@@ -28,7 +28,7 @@ const Playlist = async ({
   // console.log(playlist.tracks.items)
 
   return (
-    <div className="w-full flex justify-center">
+    <div className="w-full flex justify-center pb-14">
       <main className="md:mt-[100px] w-full md:w-[700px] py-8 px-5 space-y-4">
         <div className="flex items-center w-full gap-4">
           <HomeButton />
