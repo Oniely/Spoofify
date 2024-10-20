@@ -1,110 +1,111 @@
-'use server';
+'use server'
 
-import filenamify from 'filenamify';
-import { serverTimestamp } from './utils';
-import ytdl from '@distube/ytdl-core';
-import { PassThrough } from 'stream';
-import { Track } from '@/components/context/Download';
-const ytSearch = require('youtube-sr').default;
+import filenamify from 'filenamify'
+import { serverTimestamp } from './utils'
+import { PassThrough } from 'stream'
+import { Track } from './types'
+import ytdl from '@distube/ytdl-core'
+import fs from 'fs'
+const ytSearch = require('youtube-sr').default
 
 // MAIN FUNCTIONS
-export const downloadTrack = async (track: Track, silent = false) => {
+export const downloadTrack = async (track: Track, silent = true) => {
   try {
     if (!silent && track) {
       console.log(
-        `[${serverTimestamp()}]: Downloading ${track.name} by ${
-          track.artists[0].name
-        }...`
-      );
+        `[${serverTimestamp()}]: Downloading ${track.name} by ${track.artists[0].name}...`
+      )
     }
     // Find and download YouTube video
-    const id = await findYtId(track);
-    const buffer = await downloadYT(id);
-    console.log(`${track.name}: https://www.youtube.com/watch?v=${id}`);
-    // sanitize string to be valid for byte string conversion(valid filename)
-    const sanitizeString = (str: string) => str.replace(/[^\x00-\x7F]/g, '');
-    // Create filename
-    const filename = sanitizeString(pathNamify(`${track.name}`) + '.m4a');
+    const id = await findYtId(track)
+    if (!id) {
+      throw new Error(`No matching YouTube video found for track: ${track.name}`)
+    }
 
-    return { buffer, filename };
+    const buffer = await downloadYT(id)
+    if (!buffer) {
+      throw new Error(`Failed to download audio for ${track.name} by ${track.artists[0].name}`)
+    }
+
+    const sanitizeString = (str: string) => str.replace(/[^\x00-\x7F]/g, '')
+    const filename = sanitizeString(pathNamify(`${track.name}`) + '.m4a')
+
+    return { buffer, filename }
   } catch (error) {
-    console.error(error);
+    console.error(`Error downloading track ${track.name}:`, error)
+    throw error
   }
-};
+}
 
 // SUB FUNCTIONS
 const findYtId = async (track: Track) => {
   try {
-    let query = track.explicit
-      ? `${track.name} ${track.artists.map((artist) => artist.name)} official -instrumental`
-      : track.type === 'track' && track.artists.length > 0
-      ? `${track.name} ${track.artists.map((artist) => artist.name)} official -instrumental`
-      : `${track.name} -instrumental`;
+    let query = `${track.name} ${track.artists[0].name ?? ''}`
+    if (track.explicit) {
+      query += ' explicit'
+    }
+    if (track.type === 'track') {
+      query += ' official'
+    }
+    query += ' -instrumental'
 
-    // Get search data
-    let videos = await ytSearch.search(query, { limit: track.type === 'track' ? 5 : 3, type: 'video' });
+    const searchOptions = {
+      limit: track.type === 'track' ? 5 : 3,
+      type: 'video',
+    }
+    const videos = await ytSearch.search(query, searchOptions)
 
-    console.log(query);
+    console.log(`${query}, found ${videos.length} results`)
 
-    // Find closest to the track's duration
-    let closestVideo = null;
-    let closestDuration = Infinity;
+    let closestVideo = null
+    let closestDuration = Infinity
 
     for (const video of videos) {
-      // Check if duration is exact
-      if (video.duration === track.duration_ms) {
-        return video.id;
-      }
-
-      // Check if closest duration
-      const durationDiff = Math.abs(video.duration - track.duration_ms);
-      // check if the durationDiff of current video is lower than the previous closestDuration
+      const durationDiff = Math.abs(video.duration - track.duration_ms)
       if (durationDiff < closestDuration) {
-        closestDuration = durationDiff;
-        closestVideo = video;
+        closestDuration = durationDiff
+        closestVideo = video
       }
     }
-
-    // the lowest durationDiff will be the video that get returned
-    return closestVideo ? closestVideo.id : null;
+    return closestVideo ? closestVideo.id : null
   } catch (error) {
-    console.error(error);
+    console.error(`Error in findYtId for track ${track.name}:`, error)
+    return null
   }
-};
+}
 
 const downloadYT = async (id: string): Promise<Buffer | undefined> => {
   try {
-    // Get info
-    const info = await ytdl.getInfo(`https://www.youtube.com/watch?v=${id}`);
-    // Choose the highest quality audio format
+    // const agent = ytdl.createAgent(JSON.parse(String(fs.readFileSync('cookies.json'))))
+    const info = await ytdl.getInfo(`https://www.youtube.com/watch?v=${id}`)
     const audioFormat = ytdl.chooseFormat(info.formats, {
       quality: 'highestaudio',
-    });
+    })
 
-    // Get audio stream and process it
-    const audioStream = ytdl.downloadFromInfo(info, { format: audioFormat });
-    const buffer = streamToBuffer(audioStream);
+    if (!audioFormat) {
+      throw new Error(`No suitable audio format found for video ID: ${id}`)
+    }
 
-    return buffer;
+    const audioStream = ytdl.downloadFromInfo(info, { format: audioFormat })
+    const buffer = streamToBuffer(audioStream)
+
+    return buffer
   } catch (error) {
-    console.error(error);
+    console.error(`Error downloading YouTube video ${id}:`, error)
   }
-};
+}
 
 async function streamToBuffer(stream: any): Promise<Buffer> {
   return new Promise((resolve, reject) => {
-    const chunks: any[] = [];
-
+    const chunks: any[] = []
     stream
       .pipe(new PassThrough())
-      .on('data', (chunk: any) => chunks.push(chunk))
+      .on('data', (chunk: Buffer) => chunks.push(chunk))
       .on('error', (err: any) => reject(err))
-      .on('end', () => resolve(Buffer.concat(chunks)));
-  });
+      .on('end', () => resolve(Buffer.concat(chunks)))
+  })
 }
 
-// UTIL FUNCTIONS
 const pathNamify = (path: string) => {
-  // @ts-ignore
-  return filenamify(path).replace(/[^\p{L}\p{N}\p{P}\p{Z}^$\n]/gu, '');
-};
+  return filenamify(path).replace(/[^\p{L}\p{N}\p{P}\p{Z}^$\n]/gu, '')
+}

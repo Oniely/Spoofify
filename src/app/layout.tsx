@@ -1,9 +1,9 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import './globals.css';
-import Providers from '@/components/context/Providers';
+import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import './globals.css'
+import Providers from '@/components/context/Providers'
 
-const font = Inter({ subsets: ['latin'] });
+const font = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Spoofify',
@@ -14,15 +14,15 @@ export const metadata: Metadata = {
       href: '/logo.png',
     },
   ],
-};
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={font.className}>
         <div className="w-full h-full fixed -z-10">
           <div className="absolute bottom-0 md:bottom-1/4 left-0 md:left-1/3 w-44 h-44 bg-accent rounded-full blur-[180px]" />
@@ -33,5 +33,5 @@ export default function RootLayout({
         <Providers>{children}</Providers>
       </body>
     </html>
-  );
+  )
 }

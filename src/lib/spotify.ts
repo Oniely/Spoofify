@@ -1,7 +1,7 @@
-'use server';
+'use server'
 
-import { OrderOption, SortOption } from '@/components/SortMenu';
-import axios from 'axios';
+import { OrderOption, SortOption } from './types'
+import axios from 'axios'
 
 export const getToken = async () => {
   const response = await axios.post(
@@ -16,63 +16,60 @@ export const getToken = async () => {
         password: process.env.CLIENT_SECRET!,
       },
     }
-  );
+  )
 
-  return response.data.access_token;
-};
+  return response.data.access_token
+}
 
 export const getRequest = async (url: string) => {
-  const token = await getToken();
+  const token = await getToken()
   const response = await axios.get(url, {
     headers: { Authorization: `Bearer ${token}` },
-  });
+  })
 
-  return response.data;
-};
+  return response.data
+}
 
 function sortString(a: string, b: string) {
-  return a.localeCompare(b);
+  return a.localeCompare(b)
 }
 
 export async function getPlaylist(
   id: string,
-  sort: SortOption,
-  order: OrderOption
+  sort: SortOption | undefined,
+  order: OrderOption | undefined | null
 ) {
   try {
-    let playlist = await getRequest(
-      `https://api.spotify.com/v1/playlists/${id}`
-    );
+    let playlist = await getRequest(`https://api.spotify.com/v1/playlists/${id}`)
 
-    let { next } = playlist.tracks;
+    let { next } = playlist.tracks
     while (next) {
-      const nextTracks = await getRequest(next);
-      playlist.tracks.items.push(...nextTracks.items);
+      const nextTracks = await getRequest(next)
+      playlist.tracks.items.push(...nextTracks.items)
 
-      next = nextTracks.next;
+      next = nextTracks.next
     }
 
     if (sort) {
-      let sortedItems = playlist.tracks.items;
-      const newOrder = order === 'asc' ? true : false;
+      let sortedItems = playlist.tracks.items
+      const newOrder = order === 'asc' ? true : false
 
       if (sort === 'Custom order') {
         sortedItems = newOrder
           ? playlist.tracks.items.slice()
-          : playlist.tracks.items.slice().reverse();
+          : playlist.tracks.items.slice().reverse()
       } else if (sort === 'Title') {
         // we have to filter songs with track value in it,
         // because spotify api have some weird behavior some songs are duplicated,
-        // and the track is empty
+        // and the track is empty so we do this
         sortedItems = playlist.tracks.items
           .slice()
           .filter((item: { track: any }) => item.track)
-          .sort(
-            (a: { track: { name: string } }, b: { track: { name: string } }) =>
-              newOrder
-                ? sortString(a.track.name, b.track.name)
-                : sortString(b.track.name, a.track.name)
-          );
+          .sort((a: { track: { name: string } }, b: { track: { name: string } }) =>
+            newOrder
+              ? sortString(a.track.name, b.track.name)
+              : sortString(b.track.name, a.track.name)
+          )
       } else if (sort === 'Album') {
         sortedItems = playlist.tracks.items
           .slice()
@@ -84,31 +81,27 @@ export async function getPlaylist(
             ) => {
               const albumComparison = newOrder
                 ? sortString(a.track.album.name, b.track.album.name)
-                : sortString(b.track.album.name, a.track.album.name);
+                : sortString(b.track.album.name, a.track.album.name)
 
               if (albumComparison === 0) {
-                return a.track.track_number - b.track.track_number;
+                return a.track.track_number - b.track.track_number
               }
 
-              return albumComparison;
+              return albumComparison
             }
-          );
+          )
       } else if (sort === 'Date added') {
-        const sortOrder = newOrder ? 1 : -1;
+        const sortOrder = newOrder ? 1 : -1
 
         sortedItems = playlist.tracks.items
           .slice()
           .sort(
-            (
-              a: { added_at: string | number | Date },
-              b: { added_at: string | number | Date }
-            ) =>
-              sortOrder *
-              (new Date(a.added_at).getTime() - new Date(b.added_at).getTime())
-          );
+            (a: { added_at: string | number | Date }, b: { added_at: string | number | Date }) =>
+              sortOrder * (new Date(a.added_at).getTime() - new Date(b.added_at).getTime())
+          )
       }
 
-      playlist.tracks.items = sortedItems;
+      playlist.tracks.items = sortedItems
     }
 
     // add track #, depending on the sorting preference of user
@@ -121,35 +114,35 @@ export async function getPlaylist(
           ...item.track,
           order: idx + 1,
         },
-      }));
+      }))
 
-    return playlist;
+    return playlist
   } catch (error) {
-    console.error(`Error fetching playlist: ${error}`);
+    console.error(`Error fetching playlist: ${error}`)
   }
 }
 
 export async function getTrack(id: string) {
   try {
-    const track = await getRequest(`https://api.spotify.com/v1/tracks/${id}`);
-    return track;
+    const track = await getRequest(`https://api.spotify.com/v1/tracks/${id}`)
+    return track
   } catch (error) {
-    console.error('Error fetching track: ', error);
+    console.error('Error fetching track: ', error)
   }
 }
 
 export async function getAlbum(id: string) {
   try {
-    let album = await getRequest(`https://api.spotify.com/v1/albums/${id}`);
+    let album = await getRequest(`https://api.spotify.com/v1/albums/${id}`)
 
-    const albumImage = album.images.length > 0 ? album.images[0].url : null;
+    const albumImage = album.images.length > 0 ? album.images[0].url : null
 
-    let { next } = album.tracks;
+    let { next } = album.tracks
     while (next) {
-      const nextTracks = await getRequest(next);
-      album.tracks.items.push(...nextTracks.items);
+      const nextTracks = await getRequest(next)
+      album.tracks.items.push(...nextTracks.items)
 
-      next = nextTracks.next;
+      next = nextTracks.next
     }
 
     // add metadata
@@ -168,10 +161,10 @@ export async function getAlbum(id: string) {
           },
         ],
       },
-    }));
+    }))
 
-    return album;
+    return album
   } catch (error) {
-    console.error('Error fetching album: ', error);
+    console.error('Error fetching album: ', error)
   }
 }

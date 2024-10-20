@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import DownloadPlaylist from "./buttons/DownloadPlaylist";
-import { Playlist } from "./context/Download";
+import { Playlist } from "@/lib/types";
 
 const PlaylistInfo = ({ playlist }: { playlist: Playlist }) => {
   return (

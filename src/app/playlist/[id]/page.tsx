@@ -1,29 +1,28 @@
-import HomeButton from '@/components/buttons/HomeButton';
-import PlaylistInfo from '@/components/PlaylistInfo';
-import TrackList from '@/components/TrackList';
-import Search from '@/components/Search';
+import HomeButton from '@/components/buttons/HomeButton'
+import PlaylistInfo from '@/components/PlaylistInfo'
+import TrackList from '@/components/TrackList'
+import Search from '@/components/Search'
 
-import { getPlaylist } from '@/lib/spotify';
-import { notFound } from 'next/navigation';
-import { Playlist as PlaylistType } from '@/components/context/Download';
-import { OrderOption, SortOption } from '@/components/SortMenu';
+import { getPlaylist } from '@/lib/spotify'
+import { notFound } from 'next/navigation'
+import { OrderOption, Playlist as PlaylistType, SortOption } from '@/lib/types'
 
 const Playlist = async ({
   params,
   searchParams,
 }: {
-  params: { id: string };
-  searchParams: { sort?: SortOption; order?: OrderOption };
+  params: { id: string }
+  searchParams: { sort?: SortOption; order?: OrderOption }
 }) => {
-  const { id } = params;
-  let { sort, order } = searchParams;
+  const { id } = params
+  let { sort, order } = searchParams
 
-  sort = sort || 'Date added';
-  order = order || 'asc';
+  sort = sort || 'Date added'
+  order = order || 'asc'
 
-  const playlist: PlaylistType = await getPlaylist(id, sort, order);
+  const playlist: PlaylistType = await getPlaylist(id, sort, order)
 
-  if (!playlist) notFound();
+  if (!playlist) notFound()
 
   // console.log(playlist.tracks.items)
 
@@ -42,7 +41,7 @@ const Playlist = async ({
         ) : null}
       </main>
     </div>
-  );
-};
+  )
+}
 
-export default Playlist;
+export default Playlist

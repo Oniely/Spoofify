@@ -1,30 +1,24 @@
-"use client";
+'use client'
 
-import { useDownloader } from "./context/Download";
-import { MdOutlineClose } from "react-icons/md";
-import { motion, AnimatePresence } from "framer-motion";
-import { FaPersonRunning, FaPersonWalking } from "react-icons/fa6";
-import { useState } from "react";
+import { useDownloader } from './context/Download'
+import { MdOutlineClose } from 'react-icons/md'
+import { motion, AnimatePresence } from 'framer-motion'
+import { FaPersonRunning, FaPersonWalking } from 'react-icons/fa6'
+import { useState } from 'react'
 
 const DownloadDialog = () => {
-  const {
-    dialogItem,
-    closeDialog,
-    addDownload,
-    setDefaultSpeed,
-    defaultSpeed,
-  } = useDownloader();
+  const { dialogItem, closeDialog, addDownload, setDefaultSpeed, defaultSpeed } = useDownloader()
 
-  const [rememberSpeed, setRememberSpeed] = useState<any>(false);
+  const [rememberSpeed, setRememberSpeed] = useState<any>(false)
 
   const handleDownload = (speed: any) => {
-    addDownload(dialogItem, speed);
-    closeDialog();
+    addDownload(dialogItem, speed)
+    closeDialog()
 
     if (rememberSpeed) {
-      setDefaultSpeed(speed);
+      setDefaultSpeed(speed)
     }
-  };
+  }
 
   return (
     <AnimatePresence>
@@ -52,7 +46,7 @@ const DownloadDialog = () => {
             </p>
             <div className="grid grid-cols-2 gap-4 mt-3">
               <button
-                onClick={() => handleDownload("slow")}
+                onClick={() => handleDownload('slow')}
                 className="bg-white/10 rounded-lg flex flex-col gap-3 items-center justify-center p-4 text-white/70 hover:text-white group transition-colors border border-white/10"
               >
                 <FaPersonWalking size={50} />
@@ -62,7 +56,7 @@ const DownloadDialog = () => {
                 </div>
               </button>
               <button
-                onClick={() => handleDownload("fast")}
+                onClick={() => handleDownload('fast')}
                 className="bg-white/10 rounded-lg flex flex-col gap-3 items-center justify-center p-4 text-xs text-white/70 hover:text-white transition-colors border border-white/10"
               >
                 <FaPersonRunning size={50} />
@@ -88,7 +82,7 @@ const DownloadDialog = () => {
         </div>
       ) : null}
     </AnimatePresence>
-  );
-};
+  )
+}
 
-export default DownloadDialog;
+export default DownloadDialog
