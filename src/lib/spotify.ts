@@ -1,7 +1,7 @@
 'use server'
 
-import { OrderOption, SortOption } from './types'
 import axios from 'axios'
+import { OrderOption, SortOption } from './types'
 
 export const getToken = async () => {
   const response = await axios.post(

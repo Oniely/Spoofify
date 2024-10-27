@@ -1,16 +1,16 @@
-import HomeButton from '@/components/buttons/HomeButton';
-import PlaylistInfo from '@/components/PlaylistInfo';
-import Search from '@/components/Search';
-import TrackList from '@/components/TrackList';
-import { getAlbum } from '@/lib/spotify';
-import { notFound } from 'next/navigation';
+import HomeButton from '@/components/buttons/HomeButton'
+import PlaylistInfo from '@/components/PlaylistInfo'
+import Search from '@/components/Search'
+import TrackList from '@/components/TrackList'
+import { getAlbum } from '@/lib/spotify'
+import { notFound } from 'next/navigation'
 
 const Album = async ({ params }: { params: { id: string } }) => {
-  const { id } = params;
+  const { id } = params
 
-  const album = await getAlbum(id);
+  const album = await getAlbum(id)
 
-  if (!album) notFound();
+  if (!album) notFound()
 
   return (
     <div className="w-full flex justify-center">
@@ -28,7 +28,7 @@ const Album = async ({ params }: { params: { id: string } }) => {
         ) : null}
       </main>
     </div>
-  );
-};
+  )
+}
 
-export default Album;
+export default Album

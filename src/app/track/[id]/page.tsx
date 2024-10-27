@@ -1,16 +1,16 @@
-import HomeButton from '@/components/buttons/HomeButton';
-import PlayerProvider from '@/components/context/Player';
-import Search from '@/components/Search';
-import TrackInfo from '@/components/TrackInfo';
-import { getTrack } from '@/lib/spotify';
-import { notFound } from 'next/navigation';
+import HomeButton from '@/components/buttons/HomeButton'
+import PlayerProvider from '@/components/context/Player'
+import Search from '@/components/Search'
+import TrackInfo from '@/components/TrackInfo'
+import { getTrack } from '@/lib/spotify'
+import { notFound } from 'next/navigation'
 
 const Track = async ({ params }: { params: { id: string } }) => {
-  const { id } = params;
+  const { id } = params
 
-  const track = await getTrack(id);
+  const track = await getTrack(id)
 
-  if (!track) notFound();
+  if (!track) notFound()
 
   return (
     <div className="w-full flex justify-center">
@@ -29,7 +29,7 @@ const Track = async ({ params }: { params: { id: string } }) => {
         ) : null}
       </main>
     </div>
-  );
-};
+  )
+}
 
-export default Track;
+export default Track

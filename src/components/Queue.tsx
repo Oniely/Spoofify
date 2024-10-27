@@ -1,19 +1,19 @@
-"use client";
-import React, { useState } from "react";
-import { FiChevronDown, FiChevronUp } from "react-icons/fi";
-import Link from "next/link";
-import Image from "next/image";
-import { motion } from "framer-motion";
-import { useDownloader } from "./context/Download";
+'use client'
+import { motion } from 'framer-motion'
+import Image from 'next/image'
+import Link from 'next/link'
+import React, { useState } from 'react'
+import { FiChevronDown, FiChevronUp } from 'react-icons/fi'
+import { useDownloader } from './context/Download'
 
-const PREVIEW_MAX_IMAGES = 3;
+const PREVIEW_MAX_IMAGES = 3
 const Queue = () => {
-  const [closed, setClosed] = useState(true);
-  const { currentDownload, queue } = useDownloader();
+  const [closed, setClosed] = useState(true)
+  const { currentDownload, queue } = useDownloader()
 
   const toggleClose = () => {
-    setClosed(!closed);
-  };
+    setClosed(!closed)
+  }
 
   if (closed)
     return (
@@ -25,7 +25,7 @@ const Queue = () => {
             onClick={toggleClose}
             initial={{ y: 500, scale: 0 }}
             animate={{ y: 0, scale: 1 }}
-            transition={{ duration: 0.4, type: "spring" }}
+            transition={{ duration: 0.4, type: 'spring' }}
           >
             <ul className="flex items-center -space-x-2">
               {queue
@@ -35,7 +35,7 @@ const Queue = () => {
                   <li key={i}>
                     <Image
                       src={
-                        (item.type === "playlist" || item.type === "album")
+                        item.type === 'playlist' || item.type === 'album'
                           ? item.images[0].url
                           : item.album.images[0].url
                       }
@@ -50,7 +50,7 @@ const Queue = () => {
               <li>
                 <Image
                   src={
-                    (currentDownload.type === "playlist" || currentDownload.type === "album")
+                    currentDownload.type === 'playlist' || currentDownload.type === 'album'
                       ? currentDownload.images[0].url
                       : currentDownload.album?.images[0].url
                   }
@@ -62,9 +62,7 @@ const Queue = () => {
               </li>
             </ul>
             {queue.length >= PREVIEW_MAX_IMAGES ? (
-              <span className="text-sm">
-                +{queue.length - PREVIEW_MAX_IMAGES + 1} more
-              </span>
+              <span className="text-sm">+{queue.length - PREVIEW_MAX_IMAGES + 1} more</span>
             ) : null}
 
             <FiChevronUp size={20} />
@@ -72,7 +70,7 @@ const Queue = () => {
           </motion.button>
         ) : null}
       </div>
-    );
+    )
   else
     return (
       <>
@@ -80,17 +78,17 @@ const Queue = () => {
           <motion.div
             initial={{ y: 500, scale: 0 }}
             animate={{ y: 0, scale: 1 }}
-            transition={{ duration: 0.4, type: "spring" }}
+            transition={{ duration: 0.4, type: 'spring' }}
             className="w-full bg-white/5 rounded-lg border border-white/20 backdrop-blur-md p-2.5 text-white shadow-lg"
           >
             <div className="flex gap-3">
               <Link href={currentDownload.external_urls.spotify}>
                 <Image
                   src={
-                    (currentDownload.type === "playlist"|| currentDownload.type === "album")
+                    currentDownload.type === 'playlist' || currentDownload.type === 'album'
                       ? currentDownload.images[0].url
                       : currentDownload.album?.images[0].url
-                    }
+                  }
                   width={165}
                   height={165}
                   className="rounded"
@@ -112,10 +110,10 @@ const Queue = () => {
                     </button>
                   </div>
 
-                  {currentDownload.type === "playlist" ? (
+                  {currentDownload.type === 'playlist' ? (
                     <span className="text-xs">
                       <p>
-                        {currentDownload.followers.total} likes · by{" "}
+                        {currentDownload.followers.total} likes · by{' '}
                         {currentDownload.owner.display_name}
                       </p>
                     </span>
@@ -136,11 +134,9 @@ const Queue = () => {
                 <div className="text-xs space-y-1">
                   <span>
                     {queue.length !== 0 ? (
-                      <p className="text-xs line-clamp-1">
-                        Next in queue: {queue[0].name}
-                      </p>
+                      <p className="text-xs line-clamp-1">Next in queue: {queue[0].name}</p>
                     ) : (
-                      "Downloading..."
+                      'Downloading...'
                     )}
                   </span>
                   <div className="w-full h-1 bg-white/50 rounded-full overflow-hidden">
@@ -152,7 +148,7 @@ const Queue = () => {
           </motion.div>
         )}
       </>
-    );
-};
+    )
+}
 
-export default Queue;
+export default Queue

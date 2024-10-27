@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
-import { IoIosList } from 'react-icons/io'
-import { AiOutlineArrowUp, AiOutlineArrowDown } from 'react-icons/ai'
-import { useSearchParams, useRouter } from 'next/navigation'
 import { OrderOption, SORT_OPTIONS, SortOption } from '@/lib/types'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useState } from 'react'
+import { AiOutlineArrowDown, AiOutlineArrowUp } from 'react-icons/ai'
+import { IoIosList } from 'react-icons/io'
 
 const SortMenu = () => {
   const router = useRouter()

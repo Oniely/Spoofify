@@ -1,10 +1,10 @@
 'use client'
 
-import { useDownloader } from './context/Download'
-import { MdOutlineClose } from 'react-icons/md'
-import { motion, AnimatePresence } from 'framer-motion'
-import { FaPersonRunning, FaPersonWalking } from 'react-icons/fa6'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useState } from 'react'
+import { FaPersonRunning, FaPersonWalking } from 'react-icons/fa6'
+import { MdOutlineClose } from 'react-icons/md'
+import { useDownloader } from './context/Download'
 
 const DownloadDialog = () => {
   const { dialogItem, closeDialog, addDownload, setDefaultSpeed, defaultSpeed } = useDownloader()

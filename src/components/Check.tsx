@@ -1,5 +1,5 @@
-import React from "react";
-import { motion } from "framer-motion";
+import { motion } from 'framer-motion'
+import React from 'react'
 
 const Check = () => {
   return (
@@ -19,7 +19,7 @@ const Check = () => {
         points="4 12 9 17 20 6"
       ></motion.polyline>
     </motion.svg>
-  );
-};
+  )
+}
 
-export default Check;
+export default Check

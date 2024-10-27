@@ -1,11 +1,11 @@
 'use client'
 
+import { Playlist } from '@/lib/types'
+import { motion } from 'framer-motion'
 import { FiDownload } from 'react-icons/fi'
+import Check from '../Check'
 import Spinner from '../Spinner'
 import { useDownloader } from '../context/Download'
-import Check from '../Check'
-import { motion } from 'framer-motion'
-import { Playlist } from '@/lib/types'
 
 const DownloadPlaylist = ({ playlist }: { playlist: Playlist }) => {
   const { itemState, progress, openDialog, addDownload, defaultSpeed } = useDownloader()

@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { BsGithub } from "react-icons/bs";
+import Link from 'next/link'
+import { BsGithub } from 'react-icons/bs'
 
 const Github = () => {
   return (
@@ -10,7 +10,7 @@ const Github = () => {
       <BsGithub size={17} />
       GitHub Repo
     </Link>
-  );
-};
+  )
+}
 
-export default Github;
+export default Github

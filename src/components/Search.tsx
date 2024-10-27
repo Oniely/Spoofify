@@ -1,40 +1,38 @@
-'use client';
+'use client'
 
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { FaSearch } from 'react-icons/fa';
-import { detectSpotifyLink } from '@/lib/utils';
-import Spinner from './Spinner';
+import { detectSpotifyLink } from '@/lib/utils'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { FaSearch } from 'react-icons/fa'
+import Spinner from './Spinner'
 
 const Search = () => {
-  const router = useRouter();
+  const router = useRouter()
 
-  const [error, setError] = useState(null);
-  const [url, setUrl] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null)
+  const [url, setUrl] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const handleSearch = (e: any) => {
-    e.preventDefault();
-    setLoading(true);
+    e.preventDefault()
+    setLoading(true)
 
     try {
-      const { type, id } = detectSpotifyLink(url);
+      const { type, id } = detectSpotifyLink(url)
       if (!type || !id) {
-        throw Error(
-          "Couldn't identify the URL! Please try again with a valid one."
-        );
+        throw Error("Couldn't identify the URL! Please try again with a valid one.")
       }
 
       if (type === 'playlist' || type === 'track' || type === 'album') {
-        router.push(`/${type}/${id}`);
+        router.push(`/${type}/${id}`)
       } else {
-        throw Error(`Spotify ${type}s are not supported at this moment :(`);
+        throw Error(`Spotify ${type}s are not supported at this moment :(`)
       }
     } catch (error: any) {
-      setError(error.message);
-      setLoading(false);
+      setError(error.message)
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <>
@@ -66,7 +64,7 @@ const Search = () => {
       </form>
       {error && <p className="text-red-600">{error}</p>}
     </>
-  );
-};
+  )
+}
 
-export default Search;
+export default Search

@@ -8,6 +8,8 @@ export const downloadBlob = (blob: Blob, name: string) => {
   link.setAttribute('download', name)
   document.body.appendChild(link)
   link.click()
+  link.remove()
+  window.URL.revokeObjectURL(url)
 }
 
 export const detectSpotifyLink = (url: string) => {

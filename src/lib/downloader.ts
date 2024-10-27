@@ -1,11 +1,10 @@
 'use server'
 
+import ytdl from '@distube/ytdl-core'
 import filenamify from 'filenamify'
-import { serverTimestamp } from './utils'
 import { PassThrough } from 'stream'
 import { Track } from './types'
-import ytdl from '@distube/ytdl-core'
-import fs from 'fs'
+import { serverTimestamp } from './utils'
 const ytSearch = require('youtube-sr').default
 
 // MAIN FUNCTIONS
@@ -76,7 +75,6 @@ const findYtId = async (track: Track) => {
 
 const downloadYT = async (id: string): Promise<Buffer | undefined> => {
   try {
-    // const agent = ytdl.createAgent(JSON.parse(String(fs.readFileSync('cookies.json'))))
     const info = await ytdl.getInfo(`https://www.youtube.com/watch?v=${id}`)
     const audioFormat = ytdl.chooseFormat(info.formats, {
       quality: 'highestaudio',

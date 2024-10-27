@@ -1,8 +1,8 @@
 'use client'
 
-import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react'
-import Queue from '@/components/Queue'
 import DownloadDialog from '@/components/DownloadDialog'
+import Queue from '@/components/Queue'
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react'
 
 import axios from 'axios'
 import JSZip from 'jszip'
@@ -13,8 +13,8 @@ import { fetchFile } from '@ffmpeg/util'
 import { ID3Writer } from 'browser-id3-writer'
 import { v4 as uuidv4 } from 'uuid'
 
-import { downloadBlob, getFilenameFromHeaders } from '@/lib/utils'
 import { Playlist, Track } from '@/lib/types'
+import { downloadBlob, getFilenameFromHeaders } from '@/lib/utils'
 
 const DownloaderContext = createContext<any>(null)
 export const useDownloader = () => useContext(DownloaderContext)

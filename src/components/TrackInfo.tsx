@@ -1,8 +1,8 @@
+import { Track } from '@/lib/types'
 import Image from 'next/image'
 import Link from 'next/link'
-import PlayTrack from './buttons/PlayTrack'
 import DownloadTrack from './buttons/DownloadTrack'
-import { Track } from '@/lib/types'
+import PlayTrack from './buttons/PlayTrack'
 
 interface Props {
   track: Track

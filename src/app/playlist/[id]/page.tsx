@@ -1,11 +1,11 @@
 import HomeButton from '@/components/buttons/HomeButton'
 import PlaylistInfo from '@/components/PlaylistInfo'
-import TrackList from '@/components/TrackList'
 import Search from '@/components/Search'
+import TrackList from '@/components/TrackList'
 
 import { getPlaylist } from '@/lib/spotify'
-import { notFound } from 'next/navigation'
 import { OrderOption, Playlist as PlaylistType, SortOption } from '@/lib/types'
+import { notFound } from 'next/navigation'
 
 const Playlist = async ({
   params,

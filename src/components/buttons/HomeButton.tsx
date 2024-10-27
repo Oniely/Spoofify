@@ -1,5 +1,5 @@
-import Link from 'next/link';
-import { FaArrowLeft } from 'react-icons/fa';
+import Link from 'next/link'
+import { FaArrowLeft } from 'react-icons/fa'
 
 const HomeButton = () => {
   return (
@@ -10,7 +10,7 @@ const HomeButton = () => {
     >
       <FaArrowLeft />
     </Link>
-  );
-};
+  )
+}
 
-export default HomeButton;
+export default HomeButton

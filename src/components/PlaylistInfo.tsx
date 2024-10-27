@@ -1,7 +1,7 @@
-import Image from "next/image";
-import Link from "next/link";
-import DownloadPlaylist from "./buttons/DownloadPlaylist";
-import { Playlist } from "@/lib/types";
+import { Playlist } from '@/lib/types'
+import Image from 'next/image'
+import Link from 'next/link'
+import DownloadPlaylist from './buttons/DownloadPlaylist'
 
 const PlaylistInfo = ({ playlist }: { playlist: Playlist }) => {
   return (
@@ -25,20 +25,20 @@ const PlaylistInfo = ({ playlist }: { playlist: Playlist }) => {
       <div className="flex flex-col justify-between gap-3 md:gap-0">
         <div className="text-white">
           <h1 className="font-bold text-2xl line-clamp-1">{playlist.name}</h1>
-          <p
-            className="line-clamp-5 prose text-white prose-a:text-gray-200"
-          >{playlist?.description || playlist.label || playlist.owner.display_name }</p>
+          <p className="line-clamp-5 prose text-white prose-a:text-gray-200">
+            {playlist?.description || playlist.label || playlist.owner.display_name}
+          </p>
         </div>
         <div className="flex items-center gap-2.5 text-sm text-white/80">
           <DownloadPlaylist playlist={playlist} />
           <div className="flex flex-col text-xs">
-            <p>by {playlist.owner?.display_name || playlist.artists[0].name }</p>
-            <p>{playlist.followers?.total || playlist.popularity || 0 } likes</p>
+            <p>by {playlist.owner?.display_name || playlist.artists[0].name}</p>
+            <p>{playlist.followers?.total || playlist.popularity || 0} likes</p>
           </div>
         </div>
       </div>
     </header>
-  );
-};
+  )
+}
 
-export default PlaylistInfo;
+export default PlaylistInfo

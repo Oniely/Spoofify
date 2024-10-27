@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react'
 
 const Spinner = ({ size = 18 }) => {
   return (
@@ -22,7 +22,7 @@ const Spinner = ({ size = 18 }) => {
       </svg>
       <span className="sr-only">Loading...</span>
     </div>
-  );
-};
+  )
+}
 
-export default Spinner;
+export default Spinner
