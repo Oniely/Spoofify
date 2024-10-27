@@ -40,16 +40,13 @@ export const downloadTrack = async (track: Track, silent = true) => {
 const findYtId = async (track: Track) => {
   try {
     let query = `${track.name} ${track.artists[0].name ?? ''}`
-    if (track.explicit) {
-      query += ' explicit'
-    }
     if (track.type === 'track') {
       query += ' official'
     }
     query += ' -instrumental'
 
     const searchOptions = {
-      limit: track.type === 'track' ? 5 : 3,
+      limit: track.type === 'track' ? 10 : 3,
       type: 'video',
     }
     const videos = await ytSearch.search(query, searchOptions)

@@ -1,37 +1,39 @@
 'use client'
 
 import { OrderOption, SORT_OPTIONS, SortOption } from '@/lib/types'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { AiOutlineArrowDown, AiOutlineArrowUp } from 'react-icons/ai'
 import { IoIosList } from 'react-icons/io'
 
-const SortMenu = () => {
-  const router = useRouter()
-  const searchParams = useSearchParams()
+interface Props {
+  sort: SortOption
+  order: OrderOption
+}
 
-  const initialOption = (searchParams.get('sort') as SortOption) || 'Date added'
-  const initialOrder = (searchParams.get('order') as OrderOption) || 'asc'
+const SortMenu = ({ sort, order }: Props) => {
+  const router = useRouter()
 
   const [isOpen, setIsOpen] = useState(false)
-  const [sortOption, setSortOption] = useState<SortOption>(initialOption)
-  const [sortOrder, setSortOrder] = useState<OrderOption>(initialOrder)
 
   const toggleDropdown = () => {
-    setIsOpen(!isOpen)
+    setIsOpen((prev) => !prev)
   }
 
-  const selectSortOption = (option: SortOption) => {
-    let newOrder = sortOrder
-    if (sortOption === option) {
-      newOrder = sortOrder === 'asc' ? 'desc' : 'asc'
-      setSortOrder(newOrder)
+  const selectSortOption = (selectedSort: SortOption) => {
+    let newOrder: string = order
+
+    if (sort === selectedSort && selectedSort !== 'Custom order') {
+      newOrder = order === 'asc' ? 'desc' : 'asc'
     } else {
-      setSortOption(option)
+      newOrder = selectedSort === 'Custom order' ? 'asc' : newOrder
     }
-    router.push(`?sort=${encodeURIComponent(option)}&order=${encodeURIComponent(newOrder)}`, {
-      scroll: false,
-    })
+
+    const url = new URL(window.location.href)
+    url.searchParams.set('sort', selectedSort)
+    url.searchParams.set('order', String(newOrder))
+
+    router.push(url.toString(), { scroll: false })
 
     setIsOpen(false)
   }
@@ -42,7 +44,7 @@ const SortMenu = () => {
         className="flex items-center gap-1 transition-colors text-white/50 hover:text-white/80"
         onClick={toggleDropdown}
       >
-        <span className="text-sm flex items-center gap-1">{`${sortOption}`}</span>
+        <span className="text-sm flex items-center gap-1">{`${sort}`}</span>
         <IoIosList size={20} />
       </button>
 
@@ -53,13 +55,14 @@ const SortMenu = () => {
               <button
                 key={option}
                 className={`w-full flex items-center justify-between px-4 py-2 text-sm hover:bg-accent hover:text-white ${
-                  sortOption === option ? 'text-accent bg-primary' : 'text-white/80'
+                  sort === option ? 'text-accent bg-primary' : 'text-white/80'
                 }`}
                 onClick={() => selectSortOption(option)}
               >
                 <span>{option}</span>
-                {sortOption === option &&
-                  (sortOrder === 'asc' ? (
+                {sort === option &&
+                  sort !== 'Custom order' &&
+                  (order === 'asc' ? (
                     <AiOutlineArrowUp size={18} />
                   ) : (
                     <AiOutlineArrowDown size={18} />
