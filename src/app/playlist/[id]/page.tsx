@@ -4,23 +4,13 @@ import Search from '@/components/Search'
 import TrackList from '@/components/TrackList'
 
 import { getPlaylist } from '@/lib/spotify'
-import { OrderOption, Playlist as PlaylistType, SortOption } from '@/lib/types'
+import { Playlist as PlaylistType } from '@/lib/types'
 import { notFound } from 'next/navigation'
 
-const Playlist = async ({
-  params,
-  searchParams,
-}: {
-  params: { id: string }
-  searchParams: { sort?: SortOption; order?: OrderOption }
-}) => {
+const Playlist = async ({ params }: { params: { id: string } }) => {
   const { id } = params
-  let { sort, order } = searchParams
 
-  sort = sort || 'Date added'
-  order = order || 'asc'
-
-  const playlist: PlaylistType = await getPlaylist(id, sort, order)
+  const playlist: PlaylistType = await getPlaylist(id)
 
   if (!playlist) notFound()
 
