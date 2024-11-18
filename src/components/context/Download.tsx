@@ -8,7 +8,7 @@ import axios from 'axios'
 import JSZip from 'jszip'
 
 import { FFmpeg } from '@ffmpeg/ffmpeg'
-import { fetchFile } from '@ffmpeg/util'
+import { fetchFile, toBlobURL } from '@ffmpeg/util'
 
 import { ID3Writer } from 'browser-id3-writer'
 import { v4 as uuidv4 } from 'uuid'
@@ -21,12 +21,16 @@ export const useDownloader = () => useContext(DownloaderContext)
 
 // Global FFmpeg instance to be reused
 let ffmpegInstance: FFmpeg | null = null
+const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd'
 
 const getFFmpeg = async (): Promise<FFmpeg> => {
   if (!ffmpegInstance || !ffmpegInstance.loaded) {
     console.log('Loading FFmpeg...')
     ffmpegInstance = new FFmpeg()
-    await ffmpegInstance.load()
+    await ffmpegInstance.load({
+      coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+      wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+    })
   }
   console.log('FFmpeg Loaded')
   return ffmpegInstance

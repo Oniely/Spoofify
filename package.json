@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@distube/ytdl-core": "^4.14.3",
+    "@distube/ytdl-core": "^4.15.1",
     "@ffmpeg/ffmpeg": "^0.12.10",
     "@ffmpeg/util": "^0.12.1",
     "@types/uuid": "^10.0.0",
