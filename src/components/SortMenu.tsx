@@ -1,8 +1,8 @@
 'use client'
 
 import { OrderOption, SORT_OPTIONS, SortOption } from '@/lib/types'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { memo, useState } from 'react'
 import { AiOutlineArrowDown, AiOutlineArrowUp } from 'react-icons/ai'
 import { IoIosList } from 'react-icons/io'
 
@@ -11,8 +11,9 @@ interface Props {
   order: OrderOption
 }
 
-const SortMenu = ({ sort, order }: Props) => {
+const SortMenu = memo(function SortMenu({ sort, order }: Props) {
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   const [isOpen, setIsOpen] = useState(false)
 
@@ -29,11 +30,10 @@ const SortMenu = ({ sort, order }: Props) => {
       newOrder = selectedSort === 'Custom order' ? 'asc' : newOrder
     }
 
-    const url = new URL(window.location.href)
-    url.searchParams.set('sort', selectedSort)
-    url.searchParams.set('order', String(newOrder))
-
-    router.push(url.toString(), { scroll: false })
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('sort', selectedSort)
+    params.set('order', newOrder)
+    window.history.pushState(null, '', `?${params.toString()}`)
 
     setIsOpen(false)
   }
@@ -74,6 +74,6 @@ const SortMenu = ({ sort, order }: Props) => {
       )}
     </div>
   )
-}
+})
 
 export default SortMenu

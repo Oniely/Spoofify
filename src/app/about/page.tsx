@@ -8,9 +8,9 @@ const About = () => {
           <h1 className="text-4xl font-bold mb-4">About</h1>
           <h2 className="text-2xl font-semibold mb-3">What does this website do?</h2>
           <p>
-            This website allows users to download Spotify playlists, albums, and tracks easily. When
-            downloading playlist the website returns a ZIP file with all the tracks. Individual
-            tracks are served with metadata.
+            This website allows users to download <b>Spotify playlists, albums, and tracks</b>
+            easily (including episodes). When downloading a playlist or album the website returns a
+            ZIP file with all the tracks. Individual tracks are served with metadata.
           </p>
           <h2 className="text-2xl font-semibold mb-3">How do I use it?</h2>
           <p>

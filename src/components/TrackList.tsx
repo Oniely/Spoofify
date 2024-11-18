@@ -2,7 +2,7 @@
 
 import { OrderOption, SortOption, Track } from '@/lib/types'
 import { useSearchParams } from 'next/navigation'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { PlayerProvider } from './context/Player'
 import SortMenu from './SortMenu'
 import TrackInfo from './TrackInfo'
@@ -77,12 +77,16 @@ const TrackList = ({ tracks, isAlbum = false }: Props) => {
   const sort = (searchParams.get('sort') || 'Custom order') as SortOption
   const order = (searchParams.get('order') || 'asc') as OrderOption
 
-  const sortedTracks = sortTracks({
-    tracks,
-    isAlbum,
-    sort,
-    order,
-  })
+  const sortedTracks = useMemo(
+    () =>
+      sortTracks({
+        tracks,
+        isAlbum,
+        sort,
+        order,
+      }),
+    [tracks, isAlbum, sort, order]
+  )
 
   return (
     <PlayerProvider>
@@ -101,7 +105,7 @@ const TrackList = ({ tracks, isAlbum = false }: Props) => {
             ))}
 
           {isAlbum &&
-            sortedTracks.items.map((item: any, i: number) => (
+            tracks.items.map((item: any, i: number) => (
               <li key={i}>
                 <TrackInfo track={item} isAlbum />
               </li>
