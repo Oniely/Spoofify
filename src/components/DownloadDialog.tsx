@@ -47,11 +47,16 @@ const DownloadDialog = () => {
             <div className="grid grid-cols-2 gap-4 mt-3">
               <button
                 onClick={() => handleDownload('slow')}
-                className="bg-white/10 rounded-lg flex flex-col gap-3 items-center justify-center p-4 text-white/70 hover:text-white group transition-colors border border-white/10"
+                className="bg-white/10 rounded-lg flex flex-col gap-3 items-center justify-center p-4 text-white/70 hover:text-white group transition-colors border border-white/10 disabled:bg-gray-800/20 disabled:text-white/50 disabled:hover:text-white/50"
+                disabled
               >
                 <FaPersonWalking size={50} />
                 <div>
-                  <p className="text-sm">Slow download</p>
+                  <p className="text-sm">
+                    Slow download
+                    <br />
+                    {'(Not Available)'}
+                  </p>
                   <p className="text-xs text-white/50">Metadata, .mp3</p>
                 </div>
               </button>
